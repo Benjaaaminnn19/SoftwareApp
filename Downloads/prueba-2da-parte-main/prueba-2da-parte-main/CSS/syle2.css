@@ -1,0 +1,56 @@
+body {
+    background-color: white;
+    font-family: Arial, sans-serif;
+}
+
+
+header {
+    background: linear-gradient(to right, rgb(255, 0, 0), #000000);
+    color: white;
+    padding: 40px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+.navbar-brand {
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    transition: 0.3s;
+}
+
+.nav-link:hover {
+    color: #ffc107 !important;
+}
+
+
+h2 {
+    color: #007bff;
+    margin-top: 20px;
+}
+
+
+.btn-info {
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+
+footer {
+    margin-top: 50px;
+    font-size: 0.9rem;
+    background-color: #343a40;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+.btn-info:hover, .btn-primary:hover, .btn-success:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+  

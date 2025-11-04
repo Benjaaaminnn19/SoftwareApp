@@ -1,0 +1,45 @@
+body{
+    background-color: brown;
+}
+h1{
+    color: cornsilk;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
+    font-size: large;
+}
+p{
+    text-align: right;
+    background-color: cornflowerblue;
+    color: azure;
+    font-size: larger;
+}
+
+parr{
+    text-align: left;
+    background-color:cadetblue;
+    color: rgb(1, 15, 15);
+    font-size: larger;
+}
+
+h1,h2,h3{
+    color: cornsilk;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-weight: bold;
+    font-size: large;
+}
+
+.forma1{
+    text-align: justify;
+    background-color: rgb(226, 229, 150);
+    color: rgb(1, 21, 21);
+    font-size: larger;
+    font-family: Cooper;
+}
+
+#forma2{
+    text-align: justify;
+    background-color: rgb(173, 105, 167);
+    color: rgb(2, 48, 48);
+    font-size: larger;
+    font-family: Cooper;
+}

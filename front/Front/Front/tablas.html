@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FE|Tablas</title>
+</head>
+<body bgcolor="DarkSalmon">
+    <h2>Antigua</h2>
+    <table border="1">
+        <tr>
+            <th>Nombre 1</th>
+            <th>Nombre 2</th>
+            <th>Nombre 3</th>
+        </tr>
+        <tr>
+            <td align="right" bgcolor="green">Pedro</td>
+            <td>Manuel</td>
+            <td>Pascuala</td>
+        </tr>
+        <tr align="center">
+            <td>Juan</td>
+            <td>María</td>
+            <td>Humberto</td>
+        </tr>
+    </table>
+    <br/>
+    Hoy<br/>
+    <table border="1">
+        <thead>
+            <tr><th>Ítem 1</th><th>Ítem 2</th><th>Ítem 3</th><th>Ítem 4</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td align="right" bgcolor="green">Pedro</td>
+                <td colspan="2">Manuel</td>
+                <td>Pascuala</td>
+            </tr>
+            <tr>
+                <td align="right" bgcolor="green" rowspan="2">Pedro</td>
+                <td>Manuel</td>
+                <td>Pascuala</td>
+                <td>Santiago</td>
+            </tr>
+            <tr>
+                <td align="right" bgcolor="green">Pedro</td>
+                <td colspan="2" rowspan="2" align="center">Pascuala</td>
+                
+            </tr>
+            <tr>
+                <td align="right" bgcolor="green">Pedro</td>
+                <td>Manuel</td>
+                
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td align="right" bgcolor="green">Fin1</td>
+                <td>Fin2</td>
+                <td>Fin3</td>
+                <td>Fin4</td>
+            </tr>
+
+        </tfoot>
+    </table>
+    <br/><br/>
+    <form action="https://www.w3schools.com" method="">
+        <label for="cajaNum1">Número 1:</label><br/>
+        <input type="number" value="2025" readonly><br/>
+        <input type="number"  min="1" max="14"><br/>
+        <input type="date"><br/>
+        <input type="email"><br>
+        <input type="text" required><br/>
+        <input type="submit" value="Probar Form" />
+
+    </form>
+
+</body>
+</html>
