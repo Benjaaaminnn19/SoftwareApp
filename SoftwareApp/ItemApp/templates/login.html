@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Registro en PROTON{% endblock %}
+{% block title %}Registro en NUAM{% endblock %}
 
 {% block styles %}
-  <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+  <link rel="stylesheet" href="{% static 'css/styless.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -19,59 +19,46 @@
           <p class="text-muted">Por favor ingrese sus datos para registrarse</p>
         </div>
 
-        <form method="POST">
-          
-          {% csrf_token %}
+        <div id="alert" class="alert" style="display: none;"></div>
 
-          {% if form.errors %}
-            <div class="alert alert-danger">
-              <p>Por favor, corrige los errores:</p>
-              <ul>
-                {% for field in form %}
-                  {% if field.errors %}
-                    <li>{{ field.label }}: {{ field.errors|first }}</li>
-                  {% endif %}
-                {% endfor %}
-                {% for error in form.non_field_errors %}
-                  <li>{{ error }}</li>
-                {% endfor %}
-              </ul>
+        <form id="loginForm">
+          {% csrf_token %} 
+
+          <div class="form-group mb-3">
+            <label for="nombre" class="form-label">Nombre Completo</label>
+            <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Ingrese su Nombre Completo" required>
+          </div>
+          
+          <div class="form-group mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" name="email" class="form-control" placeholder="Ingrese su Correo Electronico" required>
+          </div>
+
+          <div class="form-group mb-3">
+            <label class="form-label">Seleccione su País</label>
+            
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="pais" id="pais-chile" value="chile" required>
+              <label class="form-check-label" for="pais-chile">Chile</label>
             </div>
-          {% endif %}
-
-          <div class="mb-3">
-            <label for="{{ form.nombre_completo.id_for_label }}" class="form-label">{{ form.nombre_completo.label }}</label>
-            {{ form.nombre_completo }}
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="pais" id="pais-argentina" value="argentina">
+              <label class="form-check-label" for="pais-argentina">Argentina</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="pais" id="pais-colombia" value="colombia">
+              <label class="form-check-label" for="pais-colombia">Colombia</label>
+            </div>
           </div>
           
-          <div class="mb-3">
-            <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
-            {{ form.email }}
+          <div class="form-group mb-3">
+            <label for="identificador" class="form-label">Identificador Tributario</label>
+            <input type="text" id="identificador" name="identificador" class="form-control" placeholder="Ingrese el identificador" required>
           </div>
-
-          <div class="mb-3">
-            <label for="{{ form.password.id_for_label }}" class="form-label">{{ form.password.label }}</label>
-            {{ form.password }}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.password2.id_for_label }}" class="form-label">{{ form.password2.label }}</label>
-            {{ form.password2 }}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.pais.id_for_label }}" class="form-label">{{ form.pais.label }}</label>
-            {{ form.pais }}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.identificador_tributario.id_for_label }}" class="form-label">{{ form.identificador_tributario.label }}</label>
-            {{ form.identificador_tributario }}
-          </div>
-
-          <div class="mb-3">
-            <label for="{{ form.fecha_nacimiento.id_for_label }}" class="form-label">{{ form.fecha_nacimiento.label }}</label>
-            {{ form.fecha_nacimiento }}
+          
+          <div class="form-group mb-3">
+            <label for="fecha_nacimiento" class="form-label">Fecha de Nacimiento</label>
+            <input type="date" id="fecha_nacimiento" name="fecha_nacimiento" class="form-control" required>
             <small class="form-text text-muted">Es necesario que sea mayor de edad</small>
           </div>
           
@@ -90,4 +77,5 @@
 {% endblock %}
 
 {% block scripts %}
-  {% endblock %}
+  <script src="{% static 'js/registro.js' %}"></script>
+{% endblock %}
