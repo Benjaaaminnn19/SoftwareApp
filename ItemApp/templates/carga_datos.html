@@ -1,0 +1,84 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Carga Masiva de Datos
+{% endblock %}
+
+{% block dashboard_page_title %}
+    Carga Masiva de Datos
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <div class="col-lg-10 offset-lg-1">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">Cargar Archivo de Montos o Factores</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Sube tu archivo .csv o .xlsx. Asegúrate de que tenga las columnas
+                    correctas (ej: 'Nombre', 'Monto', 'Factor', 'Fecha') y selecciona
+                    la clasificación a la que pertenecen.
+                </p>
+                
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <p><strong>Por favor corrige los siguientes errores:</strong></p>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.clasificacion.id_for_label }}" class="form-label fw-bold">{{ form.clasificacion.label }}</label>
+                        {{ form.clasificacion }}
+                        {% if form.clasificacion.errors %}
+                            <div class="text-danger small">{{ form.clasificacion.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">Selecciona la clasificación a la que pertenecen los datos del archivo.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.archivo_masivo.id_for_label }}" class="form-label fw-bold">{{ form.archivo_masivo.label }}</label>
+                        {{ form.archivo_masivo }}
+                        {% if form.archivo_masivo.errors %}
+                            <div class="text-danger small">{{ form.archivo_masivo.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            Formatos soportados: .csv, .xlsx, .xls. El archivo debe contener columnas como: 
+                            Nombre (obligatorio), Monto, Factor, Fecha.
+                        </small>
+                    </div>
+                    
+                    <hr>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-upload me-2"></i>
+                        Procesar y Cargar Datos
+                    </button>
+                </form>
+                
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Instrucciones:</h6>
+                        <ul class="mb-0">
+                            <li>El archivo debe tener una columna con el nombre del dato (obligatorio)</li>
+                            <li>Opcionalmente puede tener columnas: Monto, Factor, Fecha</li>
+                            <li>Los nombres de las columnas pueden estar en español o inglés</li>
+                            <li>Se aceptan variaciones como: "Nombre", "Name", "Nombre Dato", "Descripción"</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> {% endblock %}
