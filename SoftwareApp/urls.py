@@ -18,6 +18,8 @@ urlpatterns = [
     path('clasificacion/eliminar/<int:pk>/', item_views.vista_eliminar_clasificacion, name='eliminar_clasificacion'),
     
     path('carga-datos/', item_views.vista_carga_datos, name='carga_datos'),
+    path('carga-datos/plantilla/', item_views.descargar_plantilla_excel, name='descargar_plantilla'),
+    path('carga-datos/preview/', item_views.vista_preview_archivo, name='preview_archivo'),
     path('datos-tributarios/', item_views.vista_listar_datos_tributarios, name='listar_datos_tributarios'),
     path('datos-tributarios/eliminar/<int:pk>/', item_views.vista_eliminar_dato_tributario, name='eliminar_dato_tributario'),
     
