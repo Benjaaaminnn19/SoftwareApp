@@ -178,65 +178,252 @@ def leer_archivo_excel(archivo):
     nombre = archivo.name.lower()
     try:
         if nombre.endswith('.csv'):
-            # Intentar diferentes encodings
-            for encoding in ['utf-8', 'latin-1', 'iso-8859-1']:
-                try:
-                    archivo.seek(0)  # Reiniciar el archivo
-                    df = pd.read_csv(archivo, encoding=encoding)
-                    return df
-                except UnicodeDecodeError:
-                    continue
-            # Si ninguno funciona, usar el último
+            # Intentar diferentes encodings y delimitadores
+            encodings = ['utf-8', 'latin-1', 'iso-8859-1', 'cp1252', 'windows-1252']
+            delimiters = [',', ';', '\t']
+            
+            for encoding in encodings:
+                for delimiter in delimiters:
+                    try:
+                        archivo.seek(0)  # Reiniciar el archivo
+                        df = pd.read_csv(
+                            archivo, 
+                            encoding=encoding,
+                            delimiter=delimiter,
+                            skipinitialspace=True,
+                            na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null', 'NaN'],
+                            keep_default_na=True,
+                            quotechar='"',
+                            skip_blank_lines=True
+                        )
+                        
+                        # Verificar que el DataFrame tenga columnas válidas
+                        if len(df.columns) == 0:
+                            continue
+                        
+                        # Limpiar el DataFrame
+                        df = df.dropna(how='all')  # Eliminar filas completamente vacías
+                        
+                        # Eliminar columnas sin nombre o vacías
+                        df = df.loc[:, ~df.columns.str.contains('^Unnamed|^Unnamed:', case=False, na=False)]
+                        df = df.dropna(axis=1, how='all')  # Eliminar columnas completamente vacías
+                        
+                        # Verificar que tenga datos
+                        if not df.empty and len(df.columns) > 0:
+                            # Verificar que la primera fila no sea el encabezado duplicado
+                            if len(df) > 0:
+                                return df
+                    except (UnicodeDecodeError, pd.errors.EmptyDataError) as e:
+                        continue
+                    except Exception as e:
+                        # Si es otro error, intentar con la siguiente combinación
+                        continue
+            
+            # Si ninguno funciona, intentar con errors='ignore' y delimitador por defecto
             archivo.seek(0)
-            return pd.read_csv(archivo, encoding='utf-8', errors='ignore')
+            try:
+                df = pd.read_csv(
+                    archivo, 
+                    encoding='utf-8', 
+                    errors='ignore',
+                    skipinitialspace=True,
+                    na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null'],
+                    skip_blank_lines=True
+                )
+                df = df.dropna(how='all')
+                df = df.loc[:, ~df.columns.str.contains('^Unnamed|^Unnamed:', case=False, na=False)]
+                df = df.dropna(axis=1, how='all')
+                return df
+            except Exception as e:
+                raise ValueError(f"No se pudo leer el archivo CSV. Error: {str(e)}")
+            
         elif nombre.endswith(('.xls', '.xlsx')):
             archivo.seek(0)
-            return pd.read_excel(archivo, engine='openpyxl' if nombre.endswith('.xlsx') else None)
+            # Leer Excel - intentar leer la primera hoja
+            try:
+                if nombre.endswith('.xlsx'):
+                    # Para archivos .xlsx usar openpyxl
+                    df = pd.read_excel(
+                        archivo, 
+                        engine='openpyxl',
+                        sheet_name=0,  # Primera hoja
+                        na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null', 'NaN', '#N/A'],
+                        keep_default_na=True,
+                        header=0  # Primera fila como encabezado
+                    )
+                else:
+                    # Para archivos .xls intentar con xlrd, si no está disponible usar openpyxl
+                    try:
+                        df = pd.read_excel(
+                            archivo, 
+                            engine='xlrd',
+                            sheet_name=0,
+                            na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null'],
+                            header=0
+                        )
+                    except Exception:
+                        # Si xlrd no está disponible, intentar con openpyxl
+                        archivo.seek(0)
+                        df = pd.read_excel(
+                            archivo, 
+                            engine='openpyxl',
+                            sheet_name=0,
+                            na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null'],
+                            header=0
+                        )
+            except Exception as e:
+                # Si falla con el engine específico, intentar con el por defecto
+                try:
+                    archivo.seek(0)
+                    df = pd.read_excel(
+                        archivo, 
+                        sheet_name=0, 
+                        na_values=['', ' ', 'N/A', 'n/a', 'NULL', 'null'],
+                        header=0
+                    )
+                except Exception as e2:
+                    raise ValueError(f"No se pudo leer el archivo Excel. Error: {str(e2)}. Verifique que el archivo no esté dañado.")
+            
+            # Verificar que el DataFrame tenga columnas
+            if len(df.columns) == 0:
+                raise ValueError("El archivo Excel no contiene columnas. Verifique que la primera fila tenga nombres de columnas.")
+            
+            # Limpiar el DataFrame
+            # Eliminar filas completamente vacías
+            df = df.dropna(how='all')
+            
+            # Eliminar columnas sin nombre (Unnamed)
+            df = df.loc[:, ~df.columns.astype(str).str.contains('^Unnamed|^Unnamed:', case=False, na=False)]
+            
+            # Eliminar columnas que estén completamente vacías
+            df = df.dropna(axis=1, how='all')
+            
+            # Verificar que después de limpiar todavía tenga columnas
+            if len(df.columns) == 0:
+                raise ValueError("Después de limpiar el archivo, no quedan columnas válidas. Verifique el formato del archivo.")
+            
+            return df
         else:
-            raise ValueError("Formato de archivo no soportado")
+            raise ValueError("Formato de archivo no soportado. Use .csv, .xlsx o .xls")
+    except pd.errors.EmptyDataError:
+        raise ValueError("El archivo está vacío o no contiene datos válidos")
     except Exception as e:
-        raise ValueError(f"Error al leer el archivo: {str(e)}")
+        raise ValueError(f"Error al leer el archivo: {str(e)}. Verifique que el archivo tenga el formato correcto.")
 
 
 def detectar_columnas(df):
     """Detecta automáticamente las columnas del archivo"""
-    # Normalizar nombres de columnas
-    df.columns = df.columns.str.strip()
-    columnas_originales = df.columns.tolist()
-    df.columns = df.columns.str.lower().str.strip()
+    # Verificar que el DataFrame no esté vacío
+    if df.empty:
+        raise ValueError("El archivo no contiene datos. Verifique que el archivo tenga filas de datos además del encabezado.")
     
-    # Mapeo de posibles nombres
+    # Verificar que tenga columnas
+    if len(df.columns) == 0:
+        raise ValueError("El archivo no contiene columnas. Verifique el formato del archivo.")
+    
+    # Obtener los nombres de columnas REALES del DataFrame (ya limpios)
+    columnas_reales = [str(col) for col in df.columns.tolist()]
+    columnas_actuales = columnas_reales.copy()
+    
+    # Mapeo de posibles nombres (más flexible y completo)
     mapeo_columnas = {
-        'nombre': ['nombre', 'name', 'nombre_dato', 'descripcion', 'descripción', 'desc', 'dato', 'item'],
-        'monto': ['monto', 'amount', 'valor', 'value', 'precio', 'price', 'importe'],
-        'factor': ['factor', 'factor_', 'multiplicador', 'multiplier', 'ratio', 'coeficiente'],
-        'fecha': ['fecha', 'date', 'fecha_dato', 'fecha_dato', 'fecha_creacion', 'created_at']
+        'nombre': ['nombre', 'name', 'nombre_dato', 'descripcion', 'descripción', 'desc', 'dato', 'item', 
+                  'concepto', 'detalle', 'descrip', 'titulo', 'title', 'concept', 'detail'],
+        'monto': ['monto', 'amount', 'valor', 'value', 'precio', 'price', 'importe', 'cantidad', 
+                 'total', 'suma', 'capital', 'dinero', 'money', 'val', 'mnt'],
+        'factor': ['factor', 'factor_', 'multiplicador', 'multiplier', 'ratio', 'coeficiente', 
+                  'coef', 'multi', 'porcentaje', 'percent', 'fac', 'rat'],
+        'fecha': ['fecha', 'date', 'fecha_dato', 'fecha_creacion', 'created_at', 'fecha_registro',
+                 'fecha_ingreso', 'fecha_carga', 'fech', 'fecha_', 'date_', 'fec']
     }
     
     columnas_detectadas = {}
     columnas_no_detectadas = []
     
+    # Función auxiliar para normalizar nombres para comparación
+    def normalizar_para_comparar(texto):
+        """Normaliza un texto para comparación"""
+        if not texto:
+            return ""
+        texto = str(texto).lower().strip()
+        # Eliminar espacios, guiones, puntos, guiones bajos
+        texto = texto.replace(' ', '').replace('-', '').replace('_', '').replace('.', '')
+        return texto
+    
+    # Buscar columnas
     for tipo, posibles_nombres in mapeo_columnas.items():
         encontrada = None
-        for col in df.columns:
-            col_clean = col.lower().strip()
-            if any(nombre in col_clean for nombre in posibles_nombres):
-                encontrada = col
-                break
+        mejor_coincidencia = None
+        mejor_score = 0
+        
+        for col_real in columnas_reales:
+            col_normalizada = normalizar_para_comparar(col_real)
+            
+            # Buscar coincidencia exacta primero
+            for nombre in posibles_nombres:
+                nombre_normalizado = normalizar_para_comparar(nombre)
+                
+                # Coincidencia exacta
+                if nombre_normalizado == col_normalizada:
+                    encontrada = col_real
+                    mejor_score = 100
+                    break
+                
+                # Coincidencia parcial - el nombre está contenido en la columna
+                if nombre_normalizado and col_normalizada:
+                    if nombre_normalizado in col_normalizada:
+                        score = (len(nombre_normalizado) / max(len(col_normalizada), 1)) * 100
+                        if score > mejor_score:
+                            mejor_score = score
+                            mejor_coincidencia = col_real
+                    
+                    # Coincidencia inversa - la columna está contenida en el nombre
+                    elif col_normalizada in nombre_normalizado and len(col_normalizada) > 3:
+                        score = (len(col_normalizada) / len(nombre_normalizado)) * 80
+                        if score > mejor_score:
+                            mejor_score = score
+                            mejor_coincidencia = col_real
         
         if encontrada:
-            # Buscar el nombre original
-            idx = df.columns.get_loc(encontrada)
-            columnas_detectadas[tipo] = {
-                'nombre_original': columnas_originales[idx],
-                'nombre_normalizado': encontrada,
-                'indice': idx
-            }
+            # Usar el nombre REAL de la columna en el DataFrame
+            if encontrada in df.columns:
+                idx = list(df.columns).index(encontrada)
+                columnas_detectadas[tipo] = {
+                    'nombre_original': encontrada,  # Nombre EXACTO en el DataFrame
+                    'nombre_normalizado': normalizar_para_comparar(encontrada),
+                    'indice': idx
+                }
+        elif mejor_coincidencia and mejor_score > 40:
+            # Usar el nombre REAL de la columna en el DataFrame
+            if mejor_coincidencia in df.columns:
+                idx = list(df.columns).index(mejor_coincidencia)
+                columnas_detectadas[tipo] = {
+                    'nombre_original': mejor_coincidencia,  # Nombre EXACTO en el DataFrame
+                    'nombre_normalizado': normalizar_para_comparar(mejor_coincidencia),
+                    'indice': idx
+                }
         else:
             if tipo == 'nombre':  # Nombre es obligatorio
                 columnas_no_detectadas.append(tipo)
     
-    return columnas_detectadas, columnas_no_detectadas, columnas_originales
+    # Verificación final: asegurar que las columnas detectadas existen en el DataFrame
+    for tipo in list(columnas_detectadas.keys()):
+        nombre_col = columnas_detectadas[tipo]['nombre_original']
+        if nombre_col not in df.columns:
+            # Buscar la columna por coincidencia exacta (sin considerar mayúsculas/minúsculas)
+            encontrada = None
+            for col in df.columns:
+                if str(col).strip().lower() == nombre_col.strip().lower():
+                    encontrada = str(col).strip()
+                    columnas_detectadas[tipo]['nombre_original'] = encontrada
+                    break
+            if not encontrada:
+                # Si no se encuentra, eliminar de detectadas y agregar a no detectadas
+                del columnas_detectadas[tipo]
+                if tipo == 'nombre':
+                    columnas_no_detectadas.append(tipo)
+    
+    return columnas_detectadas, columnas_no_detectadas, columnas_actuales
 
 
 def validar_fila_datos(fila, columnas_detectadas, index):
@@ -244,51 +431,108 @@ def validar_fila_datos(fila, columnas_detectadas, index):
     errores = []
     datos = {}
     
+    # Función auxiliar para obtener valor de una columna
+    def obtener_valor_columna(nombre_col):
+        """Obtiene el valor de una columna de la fila"""
+        if nombre_col in fila.index:
+            return fila[nombre_col]
+        # Buscar por coincidencia (sin considerar mayúsculas/minúsculas)
+        for col in fila.index:
+            if str(col).strip().lower() == nombre_col.strip().lower():
+                return fila[col]
+        return None
+    
     # Procesar nombre (obligatorio)
     if 'nombre' in columnas_detectadas:
-        nombre_col = columnas_detectadas['nombre']['nombre_normalizado']
-        nombre = str(fila.get(nombre_col, '')).strip()
-        if not nombre or nombre == 'nan' or nombre == '':
-            errores.append(f"Fila {index + 2}: El nombre está vacío")
-        else:
-            datos['nombre_dato'] = nombre
+        nombre_col_original = columnas_detectadas['nombre']['nombre_original']
+        try:
+            nombre_valor = obtener_valor_columna(nombre_col_original)
+            
+            # Convertir a string y limpiar
+            if nombre_valor is not None and pd.notna(nombre_valor):
+                nombre = str(nombre_valor).strip()
+                # Eliminar valores que representan NaN o vacíos
+                if nombre and nombre.lower() not in ['nan', 'none', 'null', 'nat', 'n/a', 'na', '', ' ']:
+                    datos['nombre_dato'] = nombre
+                else:
+                    errores.append(f"Fila {index + 2}: El nombre está vacío o es inválido")
+            else:
+                errores.append(f"Fila {index + 2}: El nombre está vacío")
+        except Exception as e:
+            errores.append(f"Fila {index + 2}: Error al procesar el nombre: {str(e)}")
     else:
         errores.append(f"Fila {index + 2}: No se encontró columna de nombre")
     
     # Procesar monto (opcional)
     if 'monto' in columnas_detectadas:
-        monto_col = columnas_detectadas['monto']['nombre_normalizado']
+        monto_col_original = columnas_detectadas['monto']['nombre_original']
         try:
-            monto_val = pd.to_numeric(fila.get(monto_col), errors='coerce')
-            if pd.notna(monto_val):
-                datos['monto'] = float(monto_val)
+            monto_valor = obtener_valor_columna(monto_col_original)
+            
+            if monto_valor is not None and pd.notna(monto_valor):
+                # Intentar convertir a número
+                if isinstance(monto_valor, (int, float)):
+                    datos['monto'] = float(monto_valor)
+                else:
+                    monto_val = pd.to_numeric(str(monto_valor).replace(',', '.').replace('$', '').strip(), errors='coerce')
+                    if pd.notna(monto_val):
+                        datos['monto'] = float(monto_val)
+                    else:
+                        datos['monto'] = None
             else:
                 datos['monto'] = None
-        except:
+        except Exception as e:
             datos['monto'] = None
     
     # Procesar factor (opcional)
     if 'factor' in columnas_detectadas:
-        factor_col = columnas_detectadas['factor']['nombre_normalizado']
+        factor_col_original = columnas_detectadas['factor']['nombre_original']
         try:
-            factor_val = pd.to_numeric(fila.get(factor_col), errors='coerce')
-            if pd.notna(factor_val):
-                datos['factor'] = float(factor_val)
+            factor_valor = obtener_valor_columna(factor_col_original)
+            
+            if factor_valor is not None and pd.notna(factor_valor):
+                if isinstance(factor_valor, (int, float)):
+                    datos['factor'] = float(factor_valor)
+                else:
+                    factor_val = pd.to_numeric(str(factor_valor).replace(',', '.').strip(), errors='coerce')
+                    if pd.notna(factor_val):
+                        datos['factor'] = float(factor_val)
+                    else:
+                        datos['factor'] = None
             else:
                 datos['factor'] = None
-        except:
+        except Exception as e:
             datos['factor'] = None
     
     # Procesar fecha (opcional)
     if 'fecha' in columnas_detectadas:
-        fecha_col = columnas_detectadas['fecha']['nombre_normalizado']
+        fecha_col_original = columnas_detectadas['fecha']['nombre_original']
         try:
-            fecha_val = pd.to_datetime(fila.get(fecha_col), errors='coerce')
-            if pd.notna(fecha_val):
-                datos['fecha_dato'] = fecha_val.date()
+            fecha_valor = obtener_valor_columna(fecha_col_original)
+            
+            if fecha_valor is not None and pd.notna(fecha_valor):
+                # Intentar diferentes formatos de fecha
+                try:
+                    # Si ya es una fecha de pandas
+                    if isinstance(fecha_valor, pd.Timestamp):
+                        datos['fecha_dato'] = fecha_valor.date()
+                    else:
+                        fecha_val = pd.to_datetime(
+                            fecha_valor, 
+                            errors='coerce', 
+                            dayfirst=True, 
+                            yearfirst=False,
+                            infer_datetime_format=True
+                        )
+                        if pd.notna(fecha_val):
+                            datos['fecha_dato'] = fecha_val.date()
+                        else:
+                            datos['fecha_dato'] = None
+                except:
+                    datos['fecha_dato'] = None
             else:
                 datos['fecha_dato'] = None
-        except:
+        except Exception as e:
             datos['fecha_dato'] = None
     
     return datos, errores
@@ -318,18 +562,75 @@ def vista_carga_datos(request):
                 # Leer el archivo
                 df = leer_archivo_excel(archivo)
                 
+                # Validar que el DataFrame tenga datos
                 if df.empty:
-                    messages.error(request, 'El archivo está vacío.')
-                    return render(request, 'carga_datos.html', {'form': form})
-                
-                # Detectar columnas
-                columnas_detectadas, columnas_no_detectadas, columnas_originales = detectar_columnas(df.copy())
-                
-                if 'nombre' in columnas_no_detectadas:
                     messages.error(request, 
-                        f'No se pudo detectar la columna de nombre. '
-                        f'Columnas encontradas: {", ".join(columnas_originales)}')
+                        'El archivo está vacío o no contiene datos. '
+                        'Asegúrese de que el archivo tenga al menos una fila de datos además del encabezado.')
                     return render(request, 'carga_datos.html', {'form': form})
+                
+                # Validar que tenga columnas
+                if len(df.columns) == 0:
+                    messages.error(request, 
+                        'El archivo no contiene columnas válidas. '
+                        'Verifique que el archivo tenga nombres de columnas en la primera fila.')
+                    return render(request, 'carga_datos.html', {'form': form})
+                
+                # Limpiar el DataFrame primero
+                df.columns = df.columns.astype(str).str.strip()
+                df = df.loc[:, ~df.columns.str.contains('^Unnamed|^nan$', case=False, na=False)]
+                df = df.dropna(axis=1, how='all')
+                df = df.dropna(how='all')  # Eliminar filas completamente vacías
+                
+                # Detectar columnas usando el DataFrame ya limpio
+                try:
+                    columnas_detectadas, columnas_no_detectadas, columnas_originales = detectar_columnas(df.copy())
+                except ValueError as ve:
+                    messages.error(request, str(ve))
+                    return render(request, 'carga_datos.html', {'form': form})
+                
+                # Verificar que se detectó la columna de nombre
+                if 'nombre' in columnas_no_detectadas:
+                    mensaje_error = (
+                        f'No se pudo detectar la columna de nombre en el archivo. '
+                        f'Columnas encontradas en el archivo: {", ".join(columnas_originales[:10])}'
+                    )
+                    if len(columnas_originales) > 10:
+                        mensaje_error += f' (y {len(columnas_originales) - 10} más)'
+                    mensaje_error += (
+                        '. La columna de nombre es obligatoria y puede llamarse: '
+                        'Nombre, Name, Descripción, Desc, Dato, Item, etc. '
+                        'Asegúrese de que la primera fila del archivo contenga los nombres de las columnas.'
+                    )
+                    messages.error(request, mensaje_error)
+                    return render(request, 'carga_datos.html', {'form': form})
+                
+                # Verificar que el DataFrame tenga al menos una fila de datos
+                if len(df) == 0:
+                    messages.error(request, 
+                        'El archivo no contiene filas de datos. '
+                        'Asegúrese de que el archivo tenga datos además del encabezado de columnas.')
+                    return render(request, 'carga_datos.html', {'form': form})
+
+                # Verificar que las columnas detectadas existan en el DataFrame
+                for tipo, info in columnas_detectadas.items():
+                    nombre_col = info['nombre_original']
+                    if nombre_col not in df.columns:
+                        messages.error(request, 
+                            f'Error: La columna detectada "{nombre_col}" no existe en el DataFrame. '
+                            f'Columnas disponibles: {", ".join(df.columns.tolist()[:10])}')
+                        return render(request, 'carga_datos.html', {'form': form})
+                
+                # Información de depuración
+                print("=" * 60)
+                print(f"PROCESAMIENTO DE ARCHIVO: {archivo.name}")
+                print(f"Total de filas: {len(df)}")
+                print(f"Total de columnas: {len(df.columns)}")
+                print(f"Columnas en DataFrame: {list(df.columns)}")
+                print(f"Columnas detectadas:")
+                for tipo, info in columnas_detectadas.items():
+                    print(f"  - {tipo}: '{info['nombre_original']}' (índice: {info['indice']})")
+                print("=" * 60)
                 
                 # Procesar datos
                 registros_creados = 0
@@ -337,12 +638,30 @@ def vista_carga_datos(request):
                 errores = []
                 advertencias = []
                 
+                # Limpiar el índice del DataFrame para evitar problemas
+                df = df.reset_index(drop=True)
+                
+                # Verificar que hay datos para procesar
+                if len(df) == 0:
+                    messages.error(request, 
+                        'Después de procesar el archivo, no quedan filas válidas para cargar. '
+                        'Verifique que el archivo tenga datos en las filas.')
+                    return render(request, 'carga_datos.html', {'form': form})
+                
+                # Procesar cada fila
+                filas_procesadas = 0
                 for index, fila in df.iterrows():
+                    filas_procesadas += 1
                     try:
                         datos, errores_fila = validar_fila_datos(fila, columnas_detectadas, index)
                         
                         if errores_fila:
                             errores.extend(errores_fila)
+                            continue
+                        
+                        # Validar que el nombre no esté vacío después de procesar
+                        if 'nombre_dato' not in datos or not datos['nombre_dato']:
+                            errores.append(f"Fila {index + 2}: El nombre del dato está vacío")
                             continue
                         
                         # Verificar si el registro ya existe (solo en modo actualizar)
@@ -374,8 +693,8 @@ def vista_carga_datos(request):
                                 registros_creados += 1
                         else:
                             # Modo crear: siempre crear nuevo registro
-                            DatoTributario.objects.create(
-                                clasificacion=clasificacion_seleccionada,
+                    DatoTributario.objects.create(
+                        clasificacion=clasificacion_seleccionada,
                                 nombre_dato=datos['nombre_dato'],
                                 monto=datos.get('monto'),
                                 factor=datos.get('factor'),
@@ -384,39 +703,74 @@ def vista_carga_datos(request):
                             registros_creados += 1
                             
                     except Exception as e:
-                        errores.append(f"Fila {index + 2}: {str(e)}")
+                        error_msg = f"Fila {index + 2}: {str(e)}"
+                        errores.append(error_msg)
+                        print(f"ERROR en fila {index + 2}: {str(e)}")
+                        import traceback
+                        print(traceback.format_exc())
                 
                 # Mensajes de resultado
+                print("=" * 60)
+                print(f"RESUMEN DE CARGA:")
+                print(f"  - Filas procesadas: {filas_procesadas}")
+                print(f"  - Registros creados: {registros_creados}")
+                print(f"  - Registros actualizados: {registros_actualizados}")
+                print(f"  - Errores: {len(errores)}")
+                print("=" * 60)
+                
                 if registros_creados > 0:
                     messages.success(request, 
-                        f'✅ Se crearon exitosamente {registros_creados} registro(s) nuevo(s).')
+                        f'Se crearon exitosamente {registros_creados} registro(s) nuevo(s).')
                 
                 if registros_actualizados > 0:
                     messages.info(request, 
-                        f'🔄 Se actualizaron {registros_actualizados} registro(s) existente(s).')
+                        f'Se actualizaron {registros_actualizados} registro(s) existente(s).')
                 
                 if errores:
                     # Limitar el número de errores mostrados
                     errores_mostrar = errores[:10]
-                    mensaje_errores = f'❌ Se encontraron {len(errores)} error(es). '
+                    mensaje_errores = f'Se encontraron {len(errores)} error(es). '
                     if len(errores) > 10:
                         mensaje_errores += f'Mostrando los primeros 10:'
                     messages.error(request, mensaje_errores)
                     for error in errores_mostrar:
                         messages.error(request, f'  • {error}')
+                    # Si hay muchos errores, sugerir revisar el archivo
+                    if len(errores) > 10:
+                        messages.warning(request, 
+                            f'Hay {len(errores) - 10} error(es) adicional(es). '
+                            f'Revisa el formato del archivo y descarga la plantilla para ver el formato correcto.')
                 
                 if advertencias:
                     for advertencia in advertencias[:5]:
                         messages.warning(request, advertencia)
                 
+                # Si no se creó ni actualizó ningún registro y hay errores
+                if registros_creados == 0 and registros_actualizados == 0 and errores:
+                    messages.error(request, 
+                        'No se pudo cargar ningún registro. Por favor revisa los errores y el formato del archivo.')
+                
                 return redirect('carga_datos') 
 
             except ValueError as e:
-                messages.error(request, str(e))
-            except Exception as e:
-                messages.error(request, f"Error inesperado al procesar el archivo: {str(e)}")
+                messages.error(request, f"Error al leer el archivo: {str(e)}")
                 import traceback
+                print("=" * 50)
+                print("ERROR EN LECTURA DE ARCHIVO:")
                 print(traceback.format_exc())
+                print("=" * 50)
+            except pd.errors.EmptyDataError:
+                messages.error(request, 
+                    "El archivo está vacío o no contiene datos válidos. "
+                    "Asegúrese de que el archivo tenga al menos una fila de datos además del encabezado.")
+            except Exception as e:
+                error_msg = f"Error inesperado al procesar el archivo: {str(e)}"
+                messages.error(request, error_msg)
+                import traceback
+                print("=" * 50)
+                print("ERROR INESPERADO:")
+                print(traceback.format_exc())
+                print("=" * 50)
 
     else:
         form = CargaMasivaForm()
@@ -424,7 +778,7 @@ def vista_carga_datos(request):
     # Obtener estadísticas de carga reciente
     ultimas_cargas = DatoTributario.objects.select_related('clasificacion').order_by('-creado_en')[:5]
     total_datos = DatoTributario.objects.count()
-
+    
     context = {
         'form': form,
         'ultimas_cargas': ultimas_cargas,
