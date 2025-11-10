@@ -10,9 +10,9 @@ class RegistroNUAM(models.Model):
     PAISES_CHOICES = [
         ('chile', 'Chile'),
         ('colombia', 'Colombia'),
-        ('peru', 'Perú'), 
+        ('peru', 'Perú'),
     ]
-    pais = models.CharField(max_length=50, choices=PAISES_CHOICES)
+    pais = models.CharField(max_length=100, choices=PAISES_CHOICES)
     
     identificador_tributario = models.CharField(max_length=100)
     fecha_nacimiento = models.DateField()
