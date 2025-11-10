@@ -693,8 +693,9 @@ def vista_carga_datos(request):
                                 registros_creados += 1
                         else:
                             # Modo crear: siempre crear nuevo registro
-                    DatoTributario.objects.create(
-                        clasificacion=clasificacion_seleccionada,
+                    # Modo crear: siempre crear nuevo registro
+                            DatoTributario.objects.create(
+                                clasificacion=clasificacion_seleccionada,
                                 nombre_dato=datos['nombre_dato'],
                                 monto=datos.get('monto'),
                                 factor=datos.get('factor'),
@@ -708,7 +709,6 @@ def vista_carga_datos(request):
                         print(f"ERROR en fila {index + 2}: {str(e)}")
                         import traceback
                         print(traceback.format_exc())
-                
                 # Mensajes de resultado
                 print("=" * 60)
                 print(f"RESUMEN DE CARGA:")
