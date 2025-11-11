@@ -45,14 +45,20 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  
-    'django.contrib.sessions.middleware.SessionMiddleware', 
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware', 
-    'django.contrib.messages.middleware.MessageMiddleware', 
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ItemApp.middleware.UserTypeRedirectMiddleware',  # ← AÑADIR ESTA LÍNEA
 ]
+
+# Configuración de redirección después del login
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/inicio/'  # Redirige aquí, el middleware hará el resto
+LOGOUT_REDIRECT_URL = '/'
 
 ROOT_URLCONF = 'SoftwareApp.urls'
 
