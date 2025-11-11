@@ -67,6 +67,10 @@
 
           <form method="POST" class="login-form" id="loginForm">
             {% csrf_token %}
+            
+            {% if request.GET.next %}
+              <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
 
             <div class="login-form-group">
               <label for="id_username" class="login-label">
