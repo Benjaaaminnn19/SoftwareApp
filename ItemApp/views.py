@@ -4,13 +4,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.core.paginator import Paginator
-from django.db.models import Q, Sum, Count, Avg
+from django.db.models import Q, Sum, Count, Avg, Max, Min
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.http import require_http_methods
 import pandas as pd
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from django.utils import timezone
 
 from .forms import RegistroNUAMForm, ClasificacionForm, CargaMasivaForm
 from .models import RegistroNUAM, Clasificacion, DatoTributario
@@ -921,3 +922,102 @@ def vista_eliminar_dato_tributario(request, pk):
         return redirect('listar_datos_tributarios')
     context = {'dato': dato}
     return render(request, 'eliminar_dato_tributario.html', context)
+
+
+#
+# --- VISTA DE ADMINISTRACIÓN ---
+#
+from django.contrib.auth.decorators import user_passes_test
+
+def es_staff(user):
+    """Verifica si el usuario es staff"""
+    return user.is_authenticated and user.is_staff
+
+@login_required
+@user_passes_test(es_staff, login_url='/inicio/')
+def vista_panel_administracion(request):
+    """Panel de administración completo solo para usuarios staff"""
+    
+    # Estadísticas generales
+    total_usuarios = User.objects.count()
+    total_staff = User.objects.filter(is_staff=True).count()
+    total_superusuarios = User.objects.filter(is_superuser=True).count()
+    total_registros_nuam = RegistroNUAM.objects.count()
+    total_clasificaciones = Clasificacion.objects.count()
+    total_datos_tributarios = DatoTributario.objects.count()
+    
+    # Estadísticas financieras
+    stats_datos = DatoTributario.objects.aggregate(
+        monto_total=Sum('monto'),
+        monto_promedio=Avg('monto'),
+        monto_maximo=Max('monto'),
+        monto_minimo=Min('monto'),
+        factor_promedio=Avg('factor')
+    )
+    
+    # Estadísticas por país
+    stats_paises = RegistroNUAM.objects.values('pais').annotate(
+        total=Count('id')
+    ).order_by('-total')[:10]
+    
+    # Estadísticas por clasificación
+    stats_clasificacion = Clasificacion.objects.annotate(
+        total_datos=Count('datos'),
+        monto_total=Sum('datos__monto')
+    ).order_by('-total_datos')[:10]
+    
+    # Usuarios recientes
+    usuarios_recientes = User.objects.order_by('-date_joined')[:10]
+    
+    # Registros NUAM recientes
+    registros_recientes = RegistroNUAM.objects.select_related().order_by('-creado_en')[:10]
+    
+    # Datos tributarios recientes
+    datos_recientes = DatoTributario.objects.select_related('clasificacion').order_by('-creado_en')[:10]
+    
+    # Actividad reciente (últimos 30 días)
+    fecha_limite = timezone.now() - timedelta(days=30)
+    usuarios_nuevos_30d = User.objects.filter(date_joined__gte=fecha_limite).count()
+    datos_nuevos_30d = DatoTributario.objects.filter(creado_en__gte=fecha_limite).count()
+    registros_nuevos_30d = RegistroNUAM.objects.filter(creado_en__gte=fecha_limite).count()
+    
+    # Usuarios activos (que han iniciado sesión en los últimos 30 días)
+    usuarios_activos_30d = User.objects.filter(last_login__gte=fecha_limite).count()
+    
+    # Usuarios regulares (no staff)
+    total_usuarios_regulares = total_usuarios - total_staff
+    
+    context = {
+        # Estadísticas generales
+        'total_usuarios': total_usuarios,
+        'total_staff': total_staff,
+        'total_superusuarios': total_superusuarios,
+        'total_usuarios_regulares': total_usuarios_regulares,
+        'total_registros_nuam': total_registros_nuam,
+        'total_clasificaciones': total_clasificaciones,
+        'total_datos_tributarios': total_datos_tributarios,
+        
+        # Estadísticas financieras
+        'monto_total': stats_datos['monto_total'] or 0,
+        'monto_promedio': stats_datos['monto_promedio'] or 0,
+        'monto_maximo': stats_datos['monto_maximo'] or 0,
+        'monto_minimo': stats_datos['monto_minimo'] or 0,
+        'factor_promedio': stats_datos['factor_promedio'] or 0,
+        
+        # Estadísticas por categorías
+        'stats_paises': stats_paises,
+        'stats_clasificacion': stats_clasificacion,
+        
+        # Actividad reciente
+        'usuarios_recientes': usuarios_recientes,
+        'registros_recientes': registros_recientes,
+        'datos_recientes': datos_recientes,
+        
+        # Actividad últimos 30 días
+        'usuarios_nuevos_30d': usuarios_nuevos_30d,
+        'datos_nuevos_30d': datos_nuevos_30d,
+        'registros_nuevos_30d': registros_nuevos_30d,
+        'usuarios_activos_30d': usuarios_activos_30d,
+    }
+    
+    return render(request, 'admin_panel.html', context)
