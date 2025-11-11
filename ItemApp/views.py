@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import logout
+from django.contrib.auth import logout, login
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.views import LoginView
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Sum, Count, Q, Avg, Max, Min
@@ -28,6 +29,25 @@ def es_staff(user):
 def es_usuario_regular(user):
     """Verifica si el usuario es regular (no staff)"""
     return not user.is_staff
+
+
+# Vista personalizada de login que redirige según el tipo de usuario
+class CustomLoginView(LoginView):
+    template_name = 'login_tradicional.html'
+    
+    def get_success_url(self):
+        """Redirige según el tipo de usuario después del login"""
+        # Si hay un parámetro 'next', usarlo
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return next_url
+        
+        # Si el usuario es staff, redirigir al panel de admin
+        if self.request.user.is_staff:
+            return '/admin-panel/'
+        
+        # Si no, redirigir al dashboard normal
+        return '/inicio/'
 
 
 # ============================================================================
@@ -129,9 +149,18 @@ def vista_inicio_usuario(request):
 # ============================================================================
 
 @login_required
-@user_passes_test(es_staff, login_url='inicio')
 def vista_panel_administracion(request):
     """Panel de administración completo - SOLO PARA STAFF"""
+    
+    # Verificar que el usuario sea staff
+    if not request.user.is_staff:
+        messages.warning(
+            request, 
+            f'⚠️ Acceso denegado: Tu usuario ({request.user.username}) no tiene permisos de administrador. '
+            f'Necesitas tener permisos de "Staff" para acceder al panel de administración. '
+            f'Por favor, contacta al administrador del sistema o accede al Django Admin para activar los permisos.'
+        )
+        return redirect('inicio')
     
     # Estadísticas de usuarios
     total_usuarios = User.objects.count()

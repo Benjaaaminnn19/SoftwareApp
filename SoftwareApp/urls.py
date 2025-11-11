@@ -13,9 +13,7 @@ urlpatterns = [
     # ============================================
     path('', item_views.vista_antepagina, name='antepagina'),
     path('registro/', item_views.vista_registro, name='registro'),
-    path('login/', auth_views.LoginView.as_view(
-        template_name='login_tradicional.html'
-    ), name='login'),
+    path('login/', item_views.CustomLoginView.as_view(), name='login'),
     path('logout/', item_views.vista_logout, name='logout'),
     
     # ============================================
