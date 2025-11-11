@@ -934,7 +934,7 @@ def es_staff(user):
     return user.is_authenticated and user.is_staff
 
 @login_required
-@user_passes_test(es_staff, login_url='/inicio/')
+@user_passes_test(es_staff, login_url='/login/')
 def vista_panel_administracion(request):
     """Panel de administración completo solo para usuarios staff"""
     
