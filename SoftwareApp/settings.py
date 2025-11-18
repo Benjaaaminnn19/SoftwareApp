@@ -20,7 +20,28 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['softwareapp-production.up.railway.app'] 
+# Configuración de hosts permitidos
+if DEBUG:
+    ALLOWED_HOSTS = ['*']  # En desarrollo, permitir todos
+else:
+    ALLOWED_HOSTS = [
+        'softwareapp-production.up.railway.app',
+        'localhost',
+        '127.0.0.1',
+    ]
+
+# Orígenes confiables para CSRF (necesario para Railway y otros servicios)
+# En producción, Django requiere que se especifiquen explícitamente los orígenes HTTPS
+CSRF_TRUSTED_ORIGINS = [
+    'https://softwareapp-production.up.railway.app',
+]
+
+# En desarrollo, agregar localhost
+if DEBUG:
+    CSRF_TRUSTED_ORIGINS.extend([
+        'http://localhost:8000',
+        'http://127.0.0.1:8000',
+    ]) 
 
 
 # Application definition
@@ -155,11 +176,15 @@ SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 
+# Configuración de cookies CSRF
+CSRF_COOKIE_SECURE = not DEBUG  # Solo en HTTPS en producción
+CSRF_COOKIE_HTTPONLY = False  # Permitir acceso desde JavaScript si es necesario
+CSRF_USE_SESSIONS = False  # Usar cookies en lugar de sesiones para CSRF
+
 # Configuración de seguridad (para producción)
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     X_FRAME_OPTIONS = 'DENY'
