@@ -545,3 +545,77 @@ def vista_preview_archivo(request):
     """Vista previa del archivo antes de cargar"""
     # Implementación futura si se requiere
     pass
+
+
+@login_required
+def vista_reportes(request):
+    """Página de reportes y estadísticas"""
+    
+    # Estadísticas generales
+    total_datos = DatoTributario.objects.count()
+    total_clasificaciones = Clasificacion.objects.count()
+    
+    # Estadísticas financieras
+    stats_financieras = DatoTributario.objects.aggregate(
+        monto_total=Sum('monto'),
+        monto_promedio=Avg('monto'),
+        monto_maximo=Max('monto'),
+        monto_minimo=Min('monto'),
+        factor_promedio=Avg('factor'),
+        total_con_monto=Count('id', filter=Q(monto__isnull=False))
+    )
+    
+    # Estadísticas por clasificación
+    stats_por_clasificacion = Clasificacion.objects.annotate(
+        total_datos=Count('datos'),
+        monto_total=Sum('datos__monto'),
+        monto_promedio=Avg('datos__monto')
+    ).filter(total_datos__gt=0).order_by('-monto_total')
+    
+    # Datos recientes (últimos 30 días)
+    hace_30_dias = timezone.now() - timedelta(days=30)
+    datos_recientes_30d = DatoTributario.objects.filter(
+        creado_en__gte=hace_30_dias
+    ).count()
+    
+    # Top 10 datos por monto
+    top_datos_monto = DatoTributario.objects.filter(
+        monto__isnull=False
+    ).select_related('clasificacion').order_by('-monto')[:10]
+    
+    # Estadísticas por mes (últimos 6 meses)
+    from django.db.models.functions import TruncMonth
+    stats_por_mes = DatoTributario.objects.annotate(
+        mes=TruncMonth('creado_en')
+    ).values('mes').annotate(
+        total=Count('id'),
+        monto_total=Sum('monto')
+    ).order_by('-mes')[:6]
+    
+    # Clasificaciones más usadas
+    clasificaciones_mas_usadas = Clasificacion.objects.annotate(
+        total_datos=Count('datos')
+    ).filter(total_datos__gt=0).order_by('-total_datos')[:5]
+    
+    context = {
+        # Estadísticas generales
+        'total_datos': total_datos,
+        'total_clasificaciones': total_clasificaciones,
+        'datos_recientes_30d': datos_recientes_30d,
+        
+        # Estadísticas financieras
+        'monto_total': stats_financieras['monto_total'] or Decimal('0'),
+        'monto_promedio': stats_financieras['monto_promedio'] or Decimal('0'),
+        'monto_maximo': stats_financieras['monto_maximo'] or Decimal('0'),
+        'monto_minimo': stats_financieras['monto_minimo'] or Decimal('0'),
+        'factor_promedio': stats_financieras['factor_promedio'] or Decimal('0'),
+        'total_con_monto': stats_financieras['total_con_monto'] or 0,
+        
+        # Estadísticas detalladas
+        'stats_por_clasificacion': stats_por_clasificacion,
+        'top_datos_monto': top_datos_monto,
+        'stats_por_mes': stats_por_mes,
+        'clasificaciones_mas_usadas': clasificaciones_mas_usadas,
+    }
+    
+    return render(request, 'reportes.html', context)

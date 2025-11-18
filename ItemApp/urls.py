@@ -27,5 +27,8 @@ urlpatterns = [
     path('datos/listar/', views.vista_listar_datos_tributarios, name='listar_datos_tributarios'),
     path('datos/eliminar/<int:pk>/', views.vista_eliminar_dato_tributario, name='eliminar_dato_tributario'),
     path('datos/plantilla/', views.descargar_plantilla_excel, name='descargar_plantilla'),
+    
+    # Reportes
+    path('reportes/', views.vista_reportes, name='reportes'),
 ]
 

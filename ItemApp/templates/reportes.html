@@ -1,0 +1,336 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Reportes y Estadísticas
+{% endblock %}
+
+{% block dashboard_page_title %}
+    <i class="fas fa-chart-bar"></i> Reportes y Estadísticas
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <!-- Tarjetas de Estadísticas Principales -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-sm border-primary">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-database fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Total de Datos</h6>
+                            <h3 class="mb-0">{{ total_datos }}</h3>
+                            <small class="text-muted">
+                                <i class="fas fa-calendar"></i> {{ datos_recientes_30d }} últimos 30 días
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-dollar-sign fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Monto Total</h6>
+                            <h3 class="mb-0">${{ monto_total|floatformat:2|default:"0.00" }}</h3>
+                            <small class="text-muted">
+                                <i class="fas fa-chart-line"></i> Promedio: ${{ monto_promedio|floatformat:2|default:"0.00" }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-sm border-info">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-tags fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Clasificaciones</h6>
+                            <h3 class="mb-0">{{ total_clasificaciones }}</h3>
+                            <small class="text-muted">
+                                <i class="fas fa-list"></i> Categorías activas
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card shadow-sm border-warning">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-percentage fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Factor Promedio</h6>
+                            <h3 class="mb-0">{{ factor_promedio|floatformat:4|default:"0.0000" }}</h3>
+                            <small class="text-muted">
+                                <i class="fas fa-calculator"></i> Promedio general
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas Financieras Detalladas -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Estadísticas Financieras</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted">Monto Máximo</h6>
+                                <h4 class="text-success">${{ monto_maximo|floatformat:2|default:"0.00" }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted">Monto Mínimo</h6>
+                                <h4 class="text-info">${{ monto_minimo|floatformat:2|default:"0.00" }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted">Monto Promedio</h6>
+                                <h4 class="text-primary">${{ monto_promedio|floatformat:2|default:"0.00" }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted">Datos con Monto</h6>
+                                <h4 class="text-warning">{{ total_con_monto }}</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas por Clasificación -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Estadísticas por Clasificación</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats_por_clasificacion %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Clasificación</th>
+                                    <th>Total de Datos</th>
+                                    <th>Monto Total</th>
+                                    <th>Monto Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in stats_por_clasificacion %}
+                                <tr>
+                                    <td><strong>{{ stat.nombre }}</strong></td>
+                                    <td><span class="badge bg-primary">{{ stat.total_datos }}</span></td>
+                                    <td>${{ stat.monto_total|floatformat:2|default:"0.00" }}</td>
+                                    <td>${{ stat.monto_promedio|floatformat:2|default:"0.00" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No hay datos disponibles por clasificación.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Datos por Monto -->
+    <div class="row mb-4">
+        <div class="col-lg-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-trophy"></i> Top 10 Datos por Monto</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_datos_monto %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre del Dato</th>
+                                    <th>Clasificación</th>
+                                    <th>Monto</th>
+                                    <th>Factor</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for dato in top_datos_monto %}
+                                <tr>
+                                    <td><strong>{{ forloop.counter }}</strong></td>
+                                    <td>{{ dato.nombre_dato }}</td>
+                                    <td><span class="badge bg-info">{{ dato.clasificacion.nombre }}</span></td>
+                                    <td><strong class="text-success">${{ dato.monto|floatformat:2|default:"-" }}</strong></td>
+                                    <td>{{ dato.factor|floatformat:4|default:"-" }}</td>
+                                    <td>{{ dato.fecha_dato|date:"d/m/Y"|default:"-" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No hay datos con monto disponible.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clasificaciones Más Usadas -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Clasificaciones Más Usadas</h5>
+                </div>
+                <div class="card-body">
+                    {% if clasificaciones_mas_usadas %}
+                    <div class="list-group">
+                        {% for clas in clasificaciones_mas_usadas %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ clas.nombre }}</strong>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">{{ clas.total_datos }} datos</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No hay clasificaciones con datos.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas por Mes -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Actividad por Mes (Últimos 6 meses)</h5>
+                </div>
+                <div class="card-body">
+                    {% if stats_por_mes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Mes</th>
+                                    <th>Total Datos</th>
+                                    <th>Monto Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for stat in stats_por_mes %}
+                                <tr>
+                                    <td>{{ stat.mes|date:"F Y"|title }}</td>
+                                    <td><span class="badge bg-info">{{ stat.total }}</span></td>
+                                    <td>${{ stat.monto_total|floatformat:2|default:"0.00" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> No hay datos por mes disponibles.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card shadow-sm border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Acciones Rápidas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-list"></i> Ver Todos los Datos
+                            </a>
+                        </div>
+                        {% if user.is_staff %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'carga_datos' %}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-upload"></i> Cargar Datos
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'crear_clasificacion' %}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-tags"></i> Gestionar Clasificaciones
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'admin_panel' %}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-shield-alt"></i> Panel Admin
+                            </a>
+                        </div>
+                        {% else %}
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'inicio' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-home"></i> Volver al Inicio
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
