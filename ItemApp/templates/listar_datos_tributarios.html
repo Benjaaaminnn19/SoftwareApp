@@ -15,9 +15,11 @@
         <div class="card shadow-sm">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h5 class="mb-0">Datos Tributarios</h5>
+                {% if user.is_staff %}
                 <a href="{% url 'carga_datos' %}" class="btn btn-primary btn-sm">
                     <i class="fas fa-upload me-1"></i> Cargar Datos
                 </a>
+                {% endif %}
             </div>
             <div class="card-body">
                 <!-- Filtros de búsqueda -->
@@ -69,9 +71,13 @@
                                     <td>{{ dato.fecha_dato|date:"d/m/Y"|default:"-" }}</td>
                                     <td>{{ dato.creado_en|date:"d/m/Y H:i" }}</td>
                                     <td>
+                                        {% if user.is_staff %}
                                         <a href="{% url 'eliminar_dato_tributario' dato.pk %}" class="btn btn-sm btn-danger" title="Eliminar" onclick="return confirm('¿Estás seguro de eliminar este dato?');">
                                             <i class="fas fa-trash"></i>
                                         </a>
+                                        {% else %}
+                                        <span class="text-muted">Solo lectura</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}

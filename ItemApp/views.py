@@ -262,8 +262,12 @@ def vista_panel_administracion(request):
 # ============================================================================
 
 @login_required
+@user_passes_test(es_staff, login_url='inicio')
 def vista_gestion_clasificacion(request):
-    """Gestión de clasificaciones"""
+    """Gestión de clasificaciones - SOLO ADMIN"""
+    if not request.user.is_staff:
+        messages.warning(request, '⚠️ Solo los administradores pueden gestionar clasificaciones.')
+        return redirect('inicio')
     if request.method == 'POST':
         form = ClasificacionForm(request.POST)
         if form.is_valid():
@@ -285,8 +289,13 @@ def vista_gestion_clasificacion(request):
 
 
 @login_required
+@user_passes_test(es_staff, login_url='inicio')
 def vista_editar_clasificacion(request, pk):
-    """Editar clasificación existente"""
+    """Editar clasificación existente - SOLO ADMIN"""
+    if not request.user.is_staff:
+        messages.warning(request, '⚠️ Solo los administradores pueden editar clasificaciones.')
+        return redirect('crear_clasificacion')
+    
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
     
     if request.method == 'POST':
@@ -306,8 +315,13 @@ def vista_editar_clasificacion(request, pk):
 
 
 @login_required
+@user_passes_test(es_staff, login_url='inicio')
 def vista_eliminar_clasificacion(request, pk):
-    """Eliminar clasificación"""
+    """Eliminar clasificación - SOLO ADMIN"""
+    if not request.user.is_staff:
+        messages.warning(request, '⚠️ Solo los administradores pueden eliminar clasificaciones.')
+        return redirect('crear_clasificacion')
+    
     clasificacion = get_object_or_404(Clasificacion, pk=pk)
     
     if request.method == 'POST':
@@ -323,8 +337,12 @@ def vista_eliminar_clasificacion(request, pk):
 
 
 @login_required
+@user_passes_test(es_staff, login_url='inicio')
 def vista_carga_datos(request):
-    """Carga masiva de datos"""
+    """Carga masiva de datos - SOLO ADMIN"""
+    if not request.user.is_staff:
+        messages.warning(request, '⚠️ Solo los administradores pueden cargar datos.')
+        return redirect('inicio')
     if request.method == 'POST':
         form = CargaMasivaForm(request.POST, request.FILES)
         
@@ -474,8 +492,13 @@ def vista_listar_datos_tributarios(request):
 
 
 @login_required
+@user_passes_test(es_staff, login_url='inicio')
 def vista_eliminar_dato_tributario(request, pk):
-    """Eliminar dato tributario"""
+    """Eliminar dato tributario - SOLO ADMIN"""
+    if not request.user.is_staff:
+        messages.warning(request, '⚠️ Solo los administradores pueden eliminar datos tributarios.')
+        return redirect('listar_datos_tributarios')
+    
     dato = get_object_or_404(DatoTributario, pk=pk)
     
     if request.method == 'POST':

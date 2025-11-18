@@ -18,6 +18,12 @@
                 <h5 class="mb-0">Crear Nueva Clasificación</h5>
             </div>
             <div class="card-body">
+                {% if not user.is_staff %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-lock me-2"></i>
+                    <strong>Solo administradores</strong> pueden crear y gestionar clasificaciones.
+                </div>
+                {% else %}
                 <p class="text-muted">Añade una nueva categoría para tus datos (ej: Renta Fija, Renta Variable).</p>
                 
                 <form method="POST">
@@ -33,6 +39,7 @@
                     
                     <button type="submit" class="btn btn-primary w-100 mt-3">Guardar Clasificación</button>
                 </form>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -62,12 +69,16 @@
                                     <td><span class="badge bg-info">{{ item.total_datos }}</span></td>
                                     <td>{{ item.creado_en|date:"d M Y" }}</td>
                                     <td>
+                                        {% if user.is_staff %}
                                         <a href="{% url 'editar_clasificacion' item.pk %}" class="btn btn-sm btn-warning" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="{% url 'eliminar_clasificacion' item.pk %}" class="btn btn-sm btn-danger" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </a>
+                                        {% else %}
+                                        <span class="text-muted">Solo lectura</span>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}

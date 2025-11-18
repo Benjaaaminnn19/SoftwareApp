@@ -24,3 +24,7 @@ except User.DoesNotExist:
     for u in User.objects.all():
         print(f"  - {u.username} ({u.email})")
 
+
+
+
+
