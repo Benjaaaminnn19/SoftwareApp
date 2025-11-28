@@ -105,6 +105,32 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-certificate fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Calificaciones</h6>
+                            <h2 class="mb-0">{{ total_calificaciones|default:0 }}</h2>
+                            <small class="text-muted">
+                                <i class="fas fa-file-invoice"></i> Calificaciones ingresadas
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'ingresar_calificacion' %}" class="btn btn-sm btn-danger w-100">
+                        <i class="fas fa-plus me-1"></i> Nueva
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Acciones Rápidas -->
@@ -120,27 +146,27 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-3 col-sm-6">
-                            <a href="{% url 'crear_clasificacion' %}" class="btn btn-outline-primary w-100 py-3">
+                            <a href="{% url 'ingresar_calificacion' %}" class="btn btn-outline-danger w-100 py-3">
+                                <i class="fas fa-plus-circle fa-2x d-block mb-2"></i>
+                                <span>Carga Manual</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'listar_calificaciones' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-certificate fa-2x d-block mb-2"></i>
+                                <span>Calificaciones</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'crear_clasificacion' %}" class="btn btn-outline-success w-100 py-3">
                                 <i class="fas fa-folder-plus fa-2x d-block mb-2"></i>
                                 <span>Nueva Clasificación</span>
                             </a>
                         </div>
                         <div class="col-md-3 col-sm-6">
-                            <a href="{% url 'carga_datos' %}" class="btn btn-outline-success w-100 py-3">
+                            <a href="{% url 'carga_datos' %}" class="btn btn-outline-warning w-100 py-3">
                                 <i class="fas fa-upload fa-2x d-block mb-2"></i>
                                 <span>Cargar Datos</span>
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-outline-info w-100 py-3">
-                                <i class="fas fa-list fa-2x d-block mb-2"></i>
-                                <span>Ver Mis Datos</span>
-                            </a>
-                        </div>
-                        <div class="col-md-3 col-sm-6">
-                            <a href="{% url 'descargar_plantilla' %}" class="btn btn-outline-secondary w-100 py-3">
-                                <i class="fas fa-download fa-2x d-block mb-2"></i>
-                                <span>Descargar Plantilla</span>
                             </a>
                         </div>
                     </div>

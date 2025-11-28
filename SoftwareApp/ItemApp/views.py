@@ -145,6 +145,7 @@ def vista_inicio_usuario(request):
     # Estadísticas básicas
     total_clasificaciones = Clasificacion.objects.count()
     total_datos = DatoTributario.objects.count()
+    total_calificaciones = CalificacionTributaria.objects.count()
     
     # Monto total
     monto_total = DatoTributario.objects.aggregate(
@@ -165,6 +166,7 @@ def vista_inicio_usuario(request):
     context = {
         'total_clasificaciones': total_clasificaciones,
         'total_datos': total_datos,
+        'total_calificaciones': total_calificaciones,
         'monto_total': monto_total,
         'datos_recientes': datos_recientes,
         'stats_clasificacion': stats_clasificacion,
