@@ -102,14 +102,12 @@ class Command(BaseCommand):
             raise CommandError('Debes proporcionar username, email y password')
 
         try:
-            # Verificar si el usuario ya existe
             if User.objects.filter(username=username).exists():
                 self.stdout.write(
                     self.style.WARNING(f'El usuario "{username}" ya existe.')
                 )
                 return
 
-            # Crear el usuario
             user = User.objects.create_user(
                 username=username,
                 email=email,
@@ -119,7 +117,6 @@ class Command(BaseCommand):
                 first_name=username.capitalize()
             )
 
-            # Crear o actualizar el perfil
             perfil, created = PerfilUsuario.objects.get_or_create(
                 user=user,
                 defaults={'rol': rol}

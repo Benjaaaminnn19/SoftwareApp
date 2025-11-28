@@ -5,17 +5,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Páginas públicas
-    path('', views.vista_antepagina, name='antepagina'),
+    path('', vista_antepagina, name='antepagina'),
     path('registro/', views.vista_registro, name='registro'),
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logout/', views.vista_logout, name='logout'),
     
     # Dashboard de usuarios
-    path('inicio/', views.vista_inicio_usuario, name='inicio'),
+    path('inicio/', vista_inicio_usuario, name='inicio'),
     
-    # Panel de administración
-    path('admin-panel/', views.vista_panel_administracion, name='admin_panel'),
+    path('admin-panel/', vista_panel_administracion, name='admin_panel'),
     path('tributario-panel/', views.vista_panel_tributario, name='tributario_panel'),
     path('corredor-panel/', views.vista_panel_corredor, name='corredor_panel'),
     
@@ -31,10 +29,9 @@ urlpatterns = [
     path('datos/plantilla/', views.descargar_plantilla_excel, name='descargar_plantilla'),
     
     # Reportes
-    path('reportes/', views.vista_reportes, name='reportes'),
+    path('reportes/', vista_reportes, name='reportes'),
     
-    # Calificaciones Tributarias
-    path('calificaciones/', views.vista_listar_calificaciones, name='listar_calificaciones'),
+    path('calificaciones/', vista_listar_calificaciones, name='listar_calificaciones'),
     path('calificaciones/ingresar/', views.vista_ingresar_calificacion, name='ingresar_calificacion'),
     path('calificaciones/modificar/<int:pk>/', views.vista_modificar_calificacion, name='modificar_calificacion'),
     path('calificaciones/eliminar/<int:pk>/', views.vista_eliminar_calificacion, name='eliminar_calificacion'),

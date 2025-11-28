@@ -97,8 +97,8 @@ def vista_registro(request):
         
         if form.is_valid():
             data = form.cleaned_data
-            
-                try:
+
+            try:
                 user = User.objects.create_user(
                     username=data['email'],
                     email=data['email'],
@@ -106,7 +106,7 @@ def vista_registro(request):
                 )
                 user.first_name = data['nombre_completo']
                 user.save()
-                
+
                 RegistroNUAM.objects.create(
                     nombre_completo=data['nombre_completo'],
                     email=data['email'],
@@ -114,10 +114,10 @@ def vista_registro(request):
                     identificador_tributario=data['identificador_tributario'],
                     fecha_nacimiento=data['fecha_nacimiento']
                 )
-                
+
                 messages.success(request, '¡Registro exitoso! Ya puedes iniciar sesión.')
                 return redirect('login')
-            
+
             except Exception as e:
                 messages.error(request, f'Ha ocurrido un error: {e}')
     else:
@@ -751,6 +751,7 @@ def vista_modificar_calificacion(request, pk):
 @login_required
 @user_passes_test(es_admin, login_url='inicio')
 def vista_eliminar_calificacion(request, pk):
+   
     calificacion = get_object_or_404(CalificacionTributaria, pk=pk)
     
     if request.method == 'POST':
@@ -768,14 +769,15 @@ def vista_eliminar_calificacion(request, pk):
 @login_required
 @user_passes_test(puede_gestionar_calificaciones, login_url='inicio')
 def vista_copiar_calificacion(request, pk):
+ 
     calificacion_original = get_object_or_404(CalificacionTributaria, pk=pk)
     
     if request.method == 'POST':
-        
+     
         import time
         nueva_secuencia = f"{calificacion_original.secuencia_evento}_COPIA_{int(time.time())}"
         
-     
+
         nueva_calificacion = CalificacionTributaria()
         nueva_calificacion.mercado = calificacion_original.mercado
         nueva_calificacion.instrumento = calificacion_original.instrumento
@@ -791,8 +793,7 @@ def vista_copiar_calificacion(request, pk):
         nueva_calificacion.calificacion_pendiente = calificacion_original.calificacion_pendiente
         nueva_calificacion.periodo_comercial = calificacion_original.periodo_comercial
         nueva_calificacion.evento_capital = calificacion_original.evento_capital
-        
-      
+
         for i in range(8, 38):
             setattr(nueva_calificacion, f'factor_{i:02d}', getattr(calificacion_original, f'factor_{i:02d}'))
         nueva_calificacion.factor_198 = calificacion_original.factor_198
@@ -809,18 +810,14 @@ def vista_copiar_calificacion(request, pk):
     return render(request, 'calificaciones/copiar_calificacion.html', context)
 
 
-
-
 @login_required
 def vista_panel_tributario(request):
     """Panel especializado para usuarios Tributario"""
     
-    
     if not tiene_rol(request.user, 'tributario'):
-        messages.error(request, ' Acceso denegado: Solo usuarios con rol Tributario pueden acceder a este panel.')
+        messages.error(request, '⚠️ Acceso denegado: Solo usuarios con rol Tributario pueden acceder a este panel.')
         return redirect('inicio')
     
-   
     mis_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).count()
@@ -830,11 +827,10 @@ def vista_panel_tributario(request):
         calificacion_pendiente=True
     ).count()
     
-   
+    # Últimas calificaciones creadas por el usuario
     ultimas_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).order_by('-creado_en')[:10]
-    
     
     stats_origen = CalificacionTributaria.objects.filter(
         creado_por=request.user
@@ -842,7 +838,6 @@ def vista_panel_tributario(request):
         total=Count('id')
     )
     
-   
     stats_por_ano = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('año').annotate(
@@ -862,11 +857,11 @@ def vista_panel_tributario(request):
 
 @login_required
 def vista_panel_corredor(request):
-
-    if not tiene_rol(request.user, 'corredor'):
-        messages.error(request, 'Acceso denegado: Solo usuarios con rol Corredor pueden acceder a este panel.')
-        return redirect('inicio')
+    """Panel especializado para usuarios Corredor"""
     
+    if not tiene_rol(request.user, 'corredor'):
+        messages.error(request, '⚠️ Acceso denegado: Solo usuarios con rol Corredor pueden acceder a este panel.')
+        return redirect('inicio')
     
     mis_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
@@ -877,12 +872,11 @@ def vista_panel_corredor(request):
         calificacion_pendiente=True
     ).count()
     
-    
+    # Últimas calificaciones creadas por el usuario
     ultimas_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).order_by('-creado_en')[:10]
     
-
     stats_mercado = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('mercado').annotate(

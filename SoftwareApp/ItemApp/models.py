@@ -3,8 +3,6 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-# Create your models here.
-
 class RegistroNUAM(models.Model):
     nombre_completo = models.CharField(max_length=255)
     email = models.EmailField(unique=True) 
@@ -78,10 +76,6 @@ class DatoTributario(models.Model):
         verbose_name = "Dato Tributario"
         verbose_name_plural = "Datos Tributarios"
 
-
-# ============================================================================
-# MODELOS PARA CALIFICACIONES TRIBUTARIAS
-# ============================================================================
 
 class PerfilUsuario(models.Model):
     """Perfil de usuario con roles"""
