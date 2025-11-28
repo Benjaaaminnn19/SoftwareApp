@@ -71,7 +71,19 @@ class CustomLoginView(LoginView):
         if next_url:
             return next_url
         
-        # Si el usuario es staff, redirigir al panel de admin
+        # Redirigir según el rol del usuario
+        try:
+            perfil = self.request.user.perfil
+            if perfil.rol == 'admin':
+                return '/admin-panel/'
+            elif perfil.rol == 'tributario':
+                return '/tributario-panel/'
+            elif perfil.rol == 'corredor':
+                return '/corredor-panel/'
+        except PerfilUsuario.DoesNotExist:
+            pass
+        
+        # Si es staff pero no tiene perfil asignado, ir a admin
         if self.request.user.is_staff:
             return '/admin-panel/'
         
@@ -842,9 +854,13 @@ def vista_copiar_calificacion(request, pk):
 # ============================================================================
 
 @login_required
-@user_passes_test(lambda u: tiene_rol(u, 'tributario'), login_url='inicio')
 def vista_panel_tributario(request):
     """Panel especializado para usuarios Tributario"""
+    
+    # Verificar que solo tributarios pueden acceder
+    if not tiene_rol(request.user, 'tributario'):
+        messages.error(request, '⚠️ Acceso denegado: Solo usuarios con rol Tributario pueden acceder a este panel.')
+        return redirect('inicio')
     
     # Estadísticas personales
     mis_calificaciones = CalificacionTributaria.objects.filter(
@@ -887,9 +903,13 @@ def vista_panel_tributario(request):
 
 
 @login_required
-@user_passes_test(lambda u: tiene_rol(u, 'corredor'), login_url='inicio')
 def vista_panel_corredor(request):
     """Panel especializado para usuarios Corredor"""
+    
+    # Verificar que solo corredores pueden acceder
+    if not tiene_rol(request.user, 'corredor'):
+        messages.error(request, '⚠️ Acceso denegado: Solo usuarios con rol Corredor pueden acceder a este panel.')
+        return redirect('inicio')
     
     # Estadísticas personales
     mis_calificaciones = CalificacionTributaria.objects.filter(
