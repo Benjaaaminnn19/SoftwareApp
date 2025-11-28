@@ -12,9 +12,8 @@ cmds = [
 
 [phases.build]
 cmds = [
-    "python manage.py migrate --noinput",
-    "python manage.py collectstatic --noinput"
+    "cd SoftwareApp && python manage.py migrate --noinput && python manage.py collectstatic --noinput"
 ]
 
 [start]
-cmd = "gunicorn SoftwareApp.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
+cmd = "cd SoftwareApp && gunicorn SoftwareApp.wsgi:application --bind 0.0.0.0:$PORT --workers 2"
