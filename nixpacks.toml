@@ -12,7 +12,7 @@ cmds = [
 
 [phases.build]
 cmds = [
-    "cd SoftwareApp && python manage.py migrate --noinput && python manage.py collectstatic --noinput && python create_superuser.py || true"
+    "cd SoftwareApp && python manage.py migrate --noinput && python manage.py collectstatic --noinput"
 ]
 
 [start]
