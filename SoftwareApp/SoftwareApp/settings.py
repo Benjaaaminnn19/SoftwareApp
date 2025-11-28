@@ -20,7 +20,17 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-change-this-in-produc
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['softwareapp-production.up.railway.app'] 
+ALLOWED_HOSTS = ['softwareapp-production.up.railway.app']
+
+# Trusted origins for CSRF (required when requests include an Origin header)
+# Include the scheme (https) for production domains served over TLS.
+CSRF_TRUSTED_ORIGINS = [
+    'https://softwareapp-production.up.railway.app',
+]
+
+# When running behind a proxy (Railway), use the X-Forwarded-Proto header
+# so Django knows the original request scheme and can build secure URLs.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # Application definition
