@@ -18,10 +18,6 @@ from .forms import RegistroNUAMForm, ClasificacionForm, CargaMasivaForm, Calific
 from .models import RegistroNUAM, Clasificacion, DatoTributario, CalificacionTributaria, PerfilUsuario
 
 
-# ============================================================================
-# FUNCIONES DE VERIFICACIÓN DE PERMISOS
-# ============================================================================
-
 def es_staff(user):
     """Verifica si el usuario es staff (administrador)"""
     return user.is_staff
@@ -38,7 +34,7 @@ def tiene_rol(user, rol):
         perfil = user.perfil
         return perfil.rol == rol
     except PerfilUsuario.DoesNotExist:
-        # Si no tiene perfil, verificar si es staff (admin)
+        
         if rol == 'admin':
             return user.is_staff
         return False
@@ -60,18 +56,16 @@ def puede_gestionar_calificaciones(user):
     return es_admin(user) or es_corredor(user) or es_tributario(user)
 
 
-# Vista personalizada de login que redirige según el tipo de usuario
+ 
 class CustomLoginView(LoginView):
     template_name = 'login_tradicional.html'
     
     def get_success_url(self):
         """Redirige según el tipo de usuario después del login"""
-        # Si hay un parámetro 'next', usarlo
         next_url = self.request.GET.get('next')
         if next_url:
             return next_url
         
-        # Redirigir según el rol del usuario
         try:
             perfil = self.request.user.perfil
             if perfil.rol == 'admin':
@@ -83,17 +77,13 @@ class CustomLoginView(LoginView):
         except PerfilUsuario.DoesNotExist:
             pass
         
-        # Si es staff pero no tiene perfil asignado, ir a admin
         if self.request.user.is_staff:
             return '/admin-panel/'
         
-        # Si no, redirigir al dashboard normal
         return '/inicio/'
 
 
-# ============================================================================
-# VISTAS PÚBLICAS (Sin autenticación)
-# ============================================================================
+
 
 def vista_antepagina(request):
     """Página de inicio/landing"""
@@ -108,8 +98,7 @@ def vista_registro(request):
         if form.is_valid():
             data = form.cleaned_data
             
-            try:
-                # Crear usuario
+                try:
                 user = User.objects.create_user(
                     username=data['email'],
                     email=data['email'],
@@ -117,8 +106,7 @@ def vista_registro(request):
                 )
                 user.first_name = data['nombre_completo']
                 user.save()
-
-                # Crear registro NUAM
+                
                 RegistroNUAM.objects.create(
                     nombre_completo=data['nombre_completo'],
                     email=data['email'],
@@ -145,31 +133,25 @@ def vista_logout(request):
     return redirect('antepagina')
 
 
-# ============================================================================
-# VISTAS PARA USUARIOS REGULARES (Requiere login, NO staff)
-# ============================================================================
+
 
 @login_required
 @user_passes_test(es_usuario_regular, login_url='admin_panel')
 def vista_inicio_usuario(request):
     """Dashboard simplificado para usuarios regulares"""
     
-    # Estadísticas básicas
     total_clasificaciones = Clasificacion.objects.count()
     total_datos = DatoTributario.objects.count()
     total_calificaciones = CalificacionTributaria.objects.count()
     
-    # Monto total
     monto_total = DatoTributario.objects.aggregate(
         total=Sum('monto')
     )['total'] or Decimal('0')
     
-    # Datos recientes (últimos 5)
     datos_recientes = DatoTributario.objects.select_related(
         'clasificacion'
     ).order_by('-creado_en')[:5]
     
-    # Estadísticas por clasificación
     stats_clasificacion = Clasificacion.objects.annotate(
         total_datos=Count('datos'),
         monto_total=Sum('datos__monto')
@@ -187,15 +169,12 @@ def vista_inicio_usuario(request):
     return render(request, 'inicio_usuario.html', context)
 
 
-# ============================================================================
-# VISTAS PARA ADMINISTRADORES (Requiere staff)
-# ============================================================================
+
 
 @login_required
 def vista_panel_administracion(request):
     """Panel de administración completo - SOLO PARA STAFF"""
     
-    # Verificar que el usuario sea staff
     if not request.user.is_staff:
         messages.warning(
             request, 
@@ -205,13 +184,12 @@ def vista_panel_administracion(request):
         )
         return redirect('inicio')
     
-    # Estadísticas de usuarios
     total_usuarios = User.objects.count()
     total_staff = User.objects.filter(is_staff=True).count()
     total_superusuarios = User.objects.filter(is_superuser=True).count()
     total_usuarios_regulares = total_usuarios - total_staff
     
-    # Estadísticas financieras
+    
     stats_financieras = DatoTributario.objects.aggregate(
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto'),
@@ -220,12 +198,11 @@ def vista_panel_administracion(request):
         factor_promedio=Avg('factor')
     )
     
-    # Estadísticas de clasificaciones y datos
+   
     total_clasificaciones = Clasificacion.objects.count()
     total_datos_tributarios = DatoTributario.objects.count()
     total_registros_nuam = RegistroNUAM.objects.count()
     
-    # Actividad últimos 30 días
     hace_30_dias = timezone.now() - timedelta(days=30)
     
     usuarios_nuevos_30d = User.objects.filter(
@@ -244,30 +221,23 @@ def vista_panel_administracion(request):
         creado_en__gte=hace_30_dias
     ).count()
     
-    # Usuarios recientes
     usuarios_recientes = User.objects.order_by('-date_joined')[:10]
-    
-    # Registros NUAM recientes
     registros_recientes = RegistroNUAM.objects.order_by('-creado_en')[:10]
-    
-    # Datos tributarios recientes
     datos_recientes = DatoTributario.objects.select_related(
         'clasificacion'
     ).order_by('-creado_en')[:10]
     
-    # Estadísticas por país
     stats_paises = RegistroNUAM.objects.values('pais').annotate(
         total=Count('id')
     ).order_by('-total')
     
-    # Estadísticas por clasificación
     stats_clasificacion = Clasificacion.objects.annotate(
         total_datos=Count('datos'),
         monto_total=Sum('datos__monto')
     ).filter(total_datos__gt=0).order_by('-monto_total')
     
     context = {
-        # Estadísticas principales
+        
         'total_usuarios': total_usuarios,
         'total_staff': total_staff,
         'total_superusuarios': total_superusuarios,
@@ -276,20 +246,20 @@ def vista_panel_administracion(request):
         'total_datos_tributarios': total_datos_tributarios,
         'total_registros_nuam': total_registros_nuam,
         
-        # Estadísticas financieras
+       
         'monto_total': stats_financieras['monto_total'] or Decimal('0'),
         'monto_promedio': stats_financieras['monto_promedio'] or Decimal('0'),
         'monto_maximo': stats_financieras['monto_maximo'] or Decimal('0'),
         'monto_minimo': stats_financieras['monto_minimo'] or Decimal('0'),
         'factor_promedio': stats_financieras['factor_promedio'] or Decimal('0'),
         
-        # Actividad
+       
         'usuarios_nuevos_30d': usuarios_nuevos_30d,
         'usuarios_activos_30d': usuarios_activos_30d,
         'datos_nuevos_30d': datos_nuevos_30d,
         'registros_nuevos_30d': registros_nuevos_30d,
         
-        # Listas
+        
         'usuarios_recientes': usuarios_recientes,
         'registros_recientes': registros_recientes,
         'datos_recientes': datos_recientes,
@@ -300,9 +270,7 @@ def vista_panel_administracion(request):
     return render(request, 'admin_panel.html', context)
 
 
-# ============================================================================
-# VISTAS COMPARTIDAS (Tanto usuarios como admins)
-# ============================================================================
+
 
 @login_required
 @user_passes_test(es_staff, login_url='inicio')
@@ -395,7 +363,6 @@ def vista_carga_datos(request):
             modo_carga = form.cleaned_data['modo_carga']
 
             try:
-                # Leer archivo
                 if archivo.name.endswith('.csv'):
                     df = pd.read_csv(archivo)
                 elif archivo.name.endswith(('.xls', '.xlsx')):
@@ -404,7 +371,6 @@ def vista_carga_datos(request):
                     messages.error(request, 'Formato de archivo no soportado.')
                     return redirect('carga_datos')
 
-                # Detectar columnas
                 columnas_nombre = ['nombre', 'name', 'nombre_dato', 'descripcion', 'desc', 'dato', 'item']
                 columnas_monto = ['monto', 'amount', 'valor', 'value', 'precio', 'price', 'importe']
                 columnas_factor = ['factor', 'factor_', 'multiplicador', 'multiplier', 'ratio', 'coeficiente']
@@ -430,7 +396,7 @@ def vista_carga_datos(request):
                     messages.error(request, 'No se encontró columna de nombre.')
                     return redirect('carga_datos')
 
-                # Procesar datos
+              
                 registros_creados = 0
                 registros_actualizados = 0
 
@@ -489,7 +455,7 @@ def vista_carga_datos(request):
     else:
         form = CargaMasivaForm()
 
-    # Estadísticas
+    
     total_datos = DatoTributario.objects.count()
     ultimas_cargas = DatoTributario.objects.select_related(
         'clasificacion'
@@ -508,7 +474,7 @@ def vista_listar_datos_tributarios(request):
     """Listar y filtrar datos tributarios"""
     datos = DatoTributario.objects.select_related('clasificacion').order_by('-creado_en')
     
-    # Filtros
+ 
     busqueda = request.GET.get('q', '')
     clasificacion_id = request.GET.get('clasificacion', '')
     
@@ -518,7 +484,7 @@ def vista_listar_datos_tributarios(request):
     if clasificacion_id:
         datos = datos.filter(clasificacion_id=clasificacion_id)
     
-    # Paginación
+  
     paginator = Paginator(datos, 50)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
@@ -586,7 +552,6 @@ def descargar_plantilla_excel(request):
 @login_required
 def vista_preview_archivo(request):
     """Vista previa del archivo antes de cargar"""
-    # Implementación futura si se requiere
     pass
 
 
@@ -594,11 +559,11 @@ def vista_preview_archivo(request):
 def vista_reportes(request):
     """Página de reportes y estadísticas"""
     
-    # Estadísticas generales
+   
     total_datos = DatoTributario.objects.count()
     total_clasificaciones = Clasificacion.objects.count()
     
-    # Estadísticas financieras
+    
     stats_financieras = DatoTributario.objects.aggregate(
         monto_total=Sum('monto'),
         monto_promedio=Avg('monto'),
@@ -608,25 +573,25 @@ def vista_reportes(request):
         total_con_monto=Count('id', filter=Q(monto__isnull=False))
     )
     
-    # Estadísticas por clasificación
+   
     stats_por_clasificacion = Clasificacion.objects.annotate(
         total_datos=Count('datos'),
         monto_total=Sum('datos__monto'),
         monto_promedio=Avg('datos__monto')
     ).filter(total_datos__gt=0).order_by('-monto_total')
     
-    # Datos recientes (últimos 30 días)
+  
     hace_30_dias = timezone.now() - timedelta(days=30)
     datos_recientes_30d = DatoTributario.objects.filter(
         creado_en__gte=hace_30_dias
     ).count()
     
-    # Top 10 datos por monto
+   
     top_datos_monto = DatoTributario.objects.filter(
         monto__isnull=False
     ).select_related('clasificacion').order_by('-monto')[:10]
     
-    # Estadísticas por mes (últimos 6 meses)
+    
     from django.db.models.functions import TruncMonth
     stats_por_mes = DatoTributario.objects.annotate(
         mes=TruncMonth('creado_en')
@@ -635,18 +600,17 @@ def vista_reportes(request):
         monto_total=Sum('monto')
     ).order_by('-mes')[:6]
     
-    # Clasificaciones más usadas
+    
     clasificaciones_mas_usadas = Clasificacion.objects.annotate(
         total_datos=Count('datos')
     ).filter(total_datos__gt=0).order_by('-total_datos')[:5]
     
     context = {
-        # Estadísticas generales
         'total_datos': total_datos,
         'total_clasificaciones': total_clasificaciones,
         'datos_recientes_30d': datos_recientes_30d,
         
-        # Estadísticas financieras
+    
         'monto_total': stats_financieras['monto_total'] or Decimal('0'),
         'monto_promedio': stats_financieras['monto_promedio'] or Decimal('0'),
         'monto_maximo': stats_financieras['monto_maximo'] or Decimal('0'),
@@ -654,7 +618,7 @@ def vista_reportes(request):
         'factor_promedio': stats_financieras['factor_promedio'] or Decimal('0'),
         'total_con_monto': stats_financieras['total_con_monto'] or 0,
         
-        # Estadísticas detalladas
+
         'stats_por_clasificacion': stats_por_clasificacion,
         'top_datos_monto': top_datos_monto,
         'stats_por_mes': stats_por_mes,
@@ -664,16 +628,14 @@ def vista_reportes(request):
     return render(request, 'reportes.html', context)
 
 
-# ============================================================================
-# VISTAS PARA CALIFICACIONES TRIBUTARIAS
-# ============================================================================
+
 
 @login_required
 def vista_listar_calificaciones(request):
     """Listar calificaciones tributarias con filtros"""
     calificaciones = CalificacionTributaria.objects.all().order_by('-año', '-fecha_pago', 'instrumento')
     
-    # Filtros
+
     mercado = request.GET.get('mercado', '')
     origen = request.GET.get('origen', '')
     calificacion_pendiente = request.GET.get('calificacion_pendiente', '')
@@ -705,7 +667,7 @@ def vista_listar_calificaciones(request):
             Q(secuencia_evento__icontains=busqueda)
         )
     
-    # Paginación
+  
     paginator = Paginator(calificaciones, 15)
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
@@ -733,7 +695,7 @@ def vista_ingresar_calificacion(request):
         if form.is_valid():
             calificacion = form.save(commit=False)
             calificacion.creado_por = request.user
-            # Asignar origen según el rol del usuario
+          
             try:
                 perfil = request.user.perfil
                 if perfil.rol == 'corredor':
@@ -750,7 +712,7 @@ def vista_ingresar_calificacion(request):
             return redirect('listar_calificaciones')
     else:
         form = CalificacionTributariaForm()
-        # Establecer valores por defecto
+       
         form.fields['año'].initial = timezone.now().year
         form.fields['secuencia_evento'].initial = '100000807'
     
@@ -775,7 +737,7 @@ def vista_modificar_calificacion(request, pk):
     else:
         form = ModificarCalificacionTributariaForm(instance=calificacion)
     
-    # Importar descripciones de factores desde forms
+    
     from .forms import FACTOR_DESCRIPTIONS
     
     context = {
@@ -789,7 +751,6 @@ def vista_modificar_calificacion(request, pk):
 @login_required
 @user_passes_test(es_admin, login_url='inicio')
 def vista_eliminar_calificacion(request, pk):
-    """Vista para eliminar una calificación tributaria - SOLO ADMIN"""
     calificacion = get_object_or_404(CalificacionTributaria, pk=pk)
     
     if request.method == 'POST':
@@ -807,15 +768,14 @@ def vista_eliminar_calificacion(request, pk):
 @login_required
 @user_passes_test(puede_gestionar_calificaciones, login_url='inicio')
 def vista_copiar_calificacion(request, pk):
-    """Vista para copiar una calificación tributaria"""
     calificacion_original = get_object_or_404(CalificacionTributaria, pk=pk)
     
     if request.method == 'POST':
-        # Generar secuencia única para la copia
+        
         import time
         nueva_secuencia = f"{calificacion_original.secuencia_evento}_COPIA_{int(time.time())}"
         
-        # Crear una copia usando todos los campos
+     
         nueva_calificacion = CalificacionTributaria()
         nueva_calificacion.mercado = calificacion_original.mercado
         nueva_calificacion.instrumento = calificacion_original.instrumento
@@ -832,7 +792,7 @@ def vista_copiar_calificacion(request, pk):
         nueva_calificacion.periodo_comercial = calificacion_original.periodo_comercial
         nueva_calificacion.evento_capital = calificacion_original.evento_capital
         
-        # Copiar todos los factores
+      
         for i in range(8, 38):
             setattr(nueva_calificacion, f'factor_{i:02d}', getattr(calificacion_original, f'factor_{i:02d}'))
         nueva_calificacion.factor_198 = calificacion_original.factor_198
@@ -849,20 +809,18 @@ def vista_copiar_calificacion(request, pk):
     return render(request, 'calificaciones/copiar_calificacion.html', context)
 
 
-# ============================================================================
-# PANELES ESPECÍFICOS POR ROL
-# ============================================================================
+
 
 @login_required
 def vista_panel_tributario(request):
     """Panel especializado para usuarios Tributario"""
     
-    # Verificar que solo tributarios pueden acceder
+    
     if not tiene_rol(request.user, 'tributario'):
-        messages.error(request, '⚠️ Acceso denegado: Solo usuarios con rol Tributario pueden acceder a este panel.')
+        messages.error(request, ' Acceso denegado: Solo usuarios con rol Tributario pueden acceder a este panel.')
         return redirect('inicio')
     
-    # Estadísticas personales
+   
     mis_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).count()
@@ -872,19 +830,19 @@ def vista_panel_tributario(request):
         calificacion_pendiente=True
     ).count()
     
-    # Últimas calificaciones creadas por el usuario
+   
     ultimas_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).order_by('-creado_en')[:10]
     
-    # Estadísticas por origen
+    
     stats_origen = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('origen').annotate(
         total=Count('id')
     )
     
-    # Estadísticas por año
+   
     stats_por_ano = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('año').annotate(
@@ -904,14 +862,12 @@ def vista_panel_tributario(request):
 
 @login_required
 def vista_panel_corredor(request):
-    """Panel especializado para usuarios Corredor"""
-    
-    # Verificar que solo corredores pueden acceder
+
     if not tiene_rol(request.user, 'corredor'):
-        messages.error(request, '⚠️ Acceso denegado: Solo usuarios con rol Corredor pueden acceder a este panel.')
+        messages.error(request, 'Acceso denegado: Solo usuarios con rol Corredor pueden acceder a este panel.')
         return redirect('inicio')
     
-    # Estadísticas personales
+    
     mis_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).count()
@@ -921,19 +877,18 @@ def vista_panel_corredor(request):
         calificacion_pendiente=True
     ).count()
     
-    # Últimas calificaciones creadas por el usuario
+    
     ultimas_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).order_by('-creado_en')[:10]
     
-    # Estadísticas por mercado
+
     stats_mercado = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('mercado').annotate(
         total=Count('id')
     )
     
-    # Estadísticas por año
     stats_por_ano = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('año').annotate(

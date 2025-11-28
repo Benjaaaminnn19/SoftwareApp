@@ -5,7 +5,6 @@
 def vista_panel_tributario(request):
     """Panel especializado para usuarios Tributario"""
     
-    # Estadísticas personales
     mis_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).count()
@@ -15,19 +14,19 @@ def vista_panel_tributario(request):
         calificacion_pendiente=True
     ).count()
     
-    # Últimas calificaciones creadas por el usuario
+   
     ultimas_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).order_by('-creado_en')[:10]
     
-    # Estadísticas por origen
+ 
     stats_origen = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('origen').annotate(
         total=Count('id')
     )
     
-    # Estadísticas por año
+
     stats_por_ano = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('año').annotate(
@@ -50,7 +49,6 @@ def vista_panel_tributario(request):
 def vista_panel_corredor(request):
     """Panel especializado para usuarios Corredor"""
     
-    # Estadísticas personales
     mis_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).count()
@@ -60,19 +58,19 @@ def vista_panel_corredor(request):
         calificacion_pendiente=True
     ).count()
     
-    # Últimas calificaciones creadas por el usuario
+
     ultimas_calificaciones = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).order_by('-creado_en')[:10]
     
-    # Estadísticas por mercado
+ 
     stats_mercado = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('mercado').annotate(
         total=Count('id')
     )
     
-    # Estadísticas por año
+    
     stats_por_ano = CalificacionTributaria.objects.filter(
         creado_por=request.user
     ).values('año').annotate(

@@ -1,12 +1,8 @@
-"""
-Script para convertir un usuario a staff desde la línea de comandos.
-Uso: python manage.py shell < convertir_a_staff.py
-O ejecuta: python manage.py shell y luego pega el código.
-"""
+
 
 from django.contrib.auth.models import User
 
-# Cambia 'tu_email@ejemplo.com' por el email/username del usuario que quieres convertir a staff
+
 username = input("Ingresa el username/email del usuario a convertir a staff: ")
 
 try:
