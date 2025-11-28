@@ -16,6 +16,8 @@ urlpatterns = [
     
     # Panel de administración
     path('admin-panel/', views.vista_panel_administracion, name='admin_panel'),
+    path('tributario-panel/', views.vista_panel_tributario, name='tributario_panel'),
+    path('corredor-panel/', views.vista_panel_corredor, name='corredor_panel'),
     
     # Gestión de clasificaciones
     path('clasificacion/', views.vista_gestion_clasificacion, name='crear_clasificacion'),
