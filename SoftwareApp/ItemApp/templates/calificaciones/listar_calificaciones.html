@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calificaciones Tributarias{% endblock %}
+
+{% block styles %}
+<style>
+    .filters-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .table-container {
+        overflow-x: auto;
+    }
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    .btn-action {
+        min-width: 120px;
+    }
+    .pagination-info {
+        margin-top: 15px;
+        color: #6c757d;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Calificaciones Tributarias</h2>
+    
+    <!-- Filtros -->
+    <div class="filters-section">
+        <form method="get" action="{% url 'listar_calificaciones' %}" class="row g-3">
+            <div class="col-md-3">
+                <label for="mercado" class="form-label">Mercado</label>
+                <select name="mercado" id="mercado" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in mercados %}
+                        <option value="{{ value }}" {% if mercado_seleccionado == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="origen" class="form-label">Origen</label>
+                <select name="origen" id="origen" class="form-select">
+                    <option value="">Todos</option>
+                    {% for value, label in origenes %}
+                        <option value="{{ value }}" {% if origen_seleccionado == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="calificacion_pendiente" class="form-label">Calificación Pendiente</label>
+                <select name="calificacion_pendiente" id="calificacion_pendiente" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="true" {% if calificacion_pendiente_filtro == 'true' %}selected{% endif %}>Sí</option>
+                    <option value="false" {% if calificacion_pendiente_filtro == 'false' %}selected{% endif %}>No</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="periodo_comercial" class="form-label">Periodo Comercial</label>
+                <input type="number" name="periodo_comercial" id="periodo_comercial" 
+                       class="form-control" value="{{ periodo_comercial_filtro }}" 
+                       placeholder="2025">
+            </div>
+            <div class="col-md-2">
+                <label for="q" class="form-label">Buscar</label>
+                <input type="text" name="q" id="q" class="form-control" 
+                       value="{{ busqueda }}" placeholder="Instrumento, Descripción...">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> BUSCAR
+                </button>
+                <a href="{% url 'listar_calificaciones' %}" class="btn btn-outline-secondary">LIMPIAR</a>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Tabla de calificaciones -->
+    <div class="table-container">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Ejercicio</th>
+                    <th>Instrumento</th>
+                    <th>Fecha Pago</th>
+                    <th>Descripción</th>
+                    <th>Secuencia Evento</th>
+                    <th>Factor de Actuali...</th>
+                    <th>Factor-08</th>
+                    <th>Factor-09</th>
+                    <th>Factor-10</th>
+                    <th>Factor-11</th>
+                    <th>Factor-12</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if page_obj %}
+                    {% for calificacion in page_obj %}
+                    <tr class="calificacion-row" data-id="{{ calificacion.pk }}" style="cursor: pointer;">
+                        <td>{{ calificacion.año }}</td>
+                        <td>{{ calificacion.instrumento }}</td>
+                        <td>{{ calificacion.fecha_pago|date:"d-m-Y" }}</td>
+                        <td>{{ calificacion.descripcion|truncatewords:5 }}</td>
+                        <td>{{ calificacion.secuencia_evento }}</td>
+                        <td>{{ calificacion.factor_actualizacion|floatformat:8 }}</td>
+                        <td>{{ calificacion.factor_08|floatformat:8 }}</td>
+                        <td>{{ calificacion.factor_09|floatformat:8 }}</td>
+                        <td>{{ calificacion.factor_10|floatformat:8 }}</td>
+                        <td>{{ calificacion.factor_11|floatformat:8 }}</td>
+                        <td>{{ calificacion.factor_12|floatformat:8 }}</td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="11" class="text-center">No hay registros.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Paginación -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Paginación">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if mercado_seleccionado %}&mercado={{ mercado_seleccionado }}{% endif %}{% if origen_seleccionado %}&origen={{ origen_seleccionado }}{% endif %}{% if calificacion_pendiente_filtro %}&calificacion_pendiente={{ calificacion_pendiente_filtro }}{% endif %}{% if periodo_comercial_filtro %}&periodo_comercial={{ periodo_comercial_filtro }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}">Primera</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if mercado_seleccionado %}&mercado={{ mercado_seleccionado }}{% endif %}{% if origen_seleccionado %}&origen={{ origen_seleccionado }}{% endif %}{% if calificacion_pendiente_filtro %}&calificacion_pendiente={{ calificacion_pendiente_filtro }}{% endif %}{% if periodo_comercial_filtro %}&periodo_comercial={{ periodo_comercial_filtro }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}">Anterior</a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if mercado_seleccionado %}&mercado={{ mercado_seleccionado }}{% endif %}{% if origen_seleccionado %}&origen={{ origen_seleccionado }}{% endif %}{% if calificacion_pendiente_filtro %}&calificacion_pendiente={{ calificacion_pendiente_filtro }}{% endif %}{% if periodo_comercial_filtro %}&periodo_comercial={{ periodo_comercial_filtro }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if mercado_seleccionado %}&mercado={{ mercado_seleccionado }}{% endif %}{% if origen_seleccionado %}&origen={{ origen_seleccionado }}{% endif %}{% if calificacion_pendiente_filtro %}&calificacion_pendiente={{ calificacion_pendiente_filtro }}{% endif %}{% if periodo_comercial_filtro %}&periodo_comercial={{ periodo_comercial_filtro }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}">Siguiente</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if mercado_seleccionado %}&mercado={{ mercado_seleccionado }}{% endif %}{% if origen_seleccionado %}&origen={{ origen_seleccionado }}{% endif %}{% if calificacion_pendiente_filtro %}&calificacion_pendiente={{ calificacion_pendiente_filtro }}{% endif %}{% if periodo_comercial_filtro %}&periodo_comercial={{ periodo_comercial_filtro }}{% endif %}{% if busqueda %}&q={{ busqueda }}{% endif %}">Última</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div class="pagination-info text-center">
+        Elementos mostrados {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+    </div>
+    {% endif %}
+    
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+        <a href="{% url 'ingresar_calificacion' %}" class="btn btn-primary btn-action">INGRESAR</a>
+        <button type="button" class="btn btn-outline-secondary btn-action" onclick="modificarSeleccionado()">MODIFICAR</button>
+        <button type="button" class="btn btn-outline-secondary btn-action" onclick="eliminarSeleccionado()">ELIMINAR</button>
+        <button type="button" class="btn btn-outline-secondary btn-action" onclick="copiarSeleccionado()">COPIAR</button>
+        <button type="button" class="btn btn-outline-secondary btn-action">CARGA X FACTOR</button>
+        <button type="button" class="btn btn-outline-secondary btn-action">CARGA X MONTO</button>
+        <button type="button" class="btn btn-outline-secondary btn-action">OPCIONES</button>
+    </div>
+</div>
+
+<script>
+let calificacionSeleccionada = null;
+
+document.querySelectorAll('.calificacion-row').forEach(row => {
+    row.addEventListener('click', function() {
+        // Remover selección anterior
+        document.querySelectorAll('.calificacion-row').forEach(r => r.classList.remove('table-active'));
+        // Agregar selección
+        this.classList.add('table-active');
+        // Guardar ID de la calificación
+        calificacionSeleccionada = this.getAttribute('data-id');
+    });
+});
+
+function modificarSeleccionado() {
+    if (!calificacionSeleccionada) {
+        alert('Por favor, selecciona una fila primero haciendo clic en ella.');
+        return;
+    }
+    window.location.href = "{% url 'modificar_calificacion' pk=0 %}".replace('0', calificacionSeleccionada);
+}
+
+function eliminarSeleccionado() {
+    if (!calificacionSeleccionada) {
+        alert('Por favor, selecciona una fila primero haciendo clic en ella.');
+        return;
+    }
+    if (confirm('¿Estás seguro de que deseas eliminar esta calificación?')) {
+        window.location.href = "{% url 'eliminar_calificacion' pk=0 %}".replace('0', calificacionSeleccionada);
+    }
+}
+
+function copiarSeleccionado() {
+    if (!calificacionSeleccionada) {
+        alert('Por favor, selecciona una fila primero haciendo clic en ella.');
+        return;
+    }
+    window.location.href = "{% url 'copiar_calificacion' pk=0 %}".replace('0', calificacionSeleccionada);
+}
+</script>
+{% endblock %}
+

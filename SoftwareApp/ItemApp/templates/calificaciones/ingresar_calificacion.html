@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Ingresar Calificación{% endblock %}
+
+{% block styles %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group.full-width {
+        grid-column: 1 / -1;
+    }
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 5px;
+    }
+    .btn-container {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 30px;
+    }
+    .btn-cancel {
+        background: #e9ecef;
+        border: 1px solid #dee2e6;
+        color: #495057;
+    }
+    .btn-cancel:hover {
+        background: #dee2e6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="form-container">
+        <h2 class="mb-4">Ingresar Calificación</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.mercado.id_for_label }}" class="form-label">{{ form.mercado.label }}</label>
+                    {{ form.mercado }}
+                    {% if form.mercado.errors %}
+                        <div class="text-danger small">{{ form.mercado.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.instrumento.id_for_label }}" class="form-label">{{ form.instrumento.label }}</label>
+                    {{ form.instrumento }}
+                    {% if form.instrumento.errors %}
+                        <div class="text-danger small">{{ form.instrumento.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group full-width">
+                <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
+                {{ form.descripcion }}
+                {% if form.descripcion.errors %}
+                    <div class="text-danger small">{{ form.descripcion.errors }}</div>
+                {% endif %}
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.fecha_pago.id_for_label }}" class="form-label">{{ form.fecha_pago.label }}</label>
+                    {{ form.fecha_pago }}
+                    {% if form.fecha_pago.errors %}
+                        <div class="text-danger small">{{ form.fecha_pago.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.secuencia_evento.id_for_label }}" class="form-label">{{ form.secuencia_evento.label }}</label>
+                    {{ form.secuencia_evento }}
+                    {% if form.secuencia_evento.errors %}
+                        <div class="text-danger small">{{ form.secuencia_evento.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.dividendo.id_for_label }}" class="form-label">{{ form.dividendo.label }}</label>
+                    {{ form.dividendo }}
+                    {% if form.dividendo.errors %}
+                        <div class="text-danger small">{{ form.dividendo.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.valor_historico.id_for_label }}" class="form-label">{{ form.valor_historico.label }}</label>
+                    {{ form.valor_historico }}
+                    {% if form.valor_historico.errors %}
+                        <div class="text-danger small">{{ form.valor_historico.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="{{ form.factor_actualizacion.id_for_label }}" class="form-label">{{ form.factor_actualizacion.label }}</label>
+                    {{ form.factor_actualizacion }}
+                    {% if form.factor_actualizacion.errors %}
+                        <div class="text-danger small">{{ form.factor_actualizacion.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="{{ form.año.id_for_label }}" class="form-label">{{ form.año.label }}</label>
+                    {{ form.año }}
+                    {% if form.año.errors %}
+                        <div class="text-danger small">{{ form.año.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <div class="form-check">
+                    {{ form.isfut }}
+                    <label for="{{ form.isfut.id_for_label }}" class="form-check-label">{{ form.isfut.label }}</label>
+                    {% if form.isfut.errors %}
+                        <div class="text-danger small">{{ form.isfut.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="btn-container">
+                <a href="{% url 'listar_calificaciones' %}" class="btn btn-cancel">CANCELAR</a>
+                <button type="submit" class="btn btn-primary">INGRESAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

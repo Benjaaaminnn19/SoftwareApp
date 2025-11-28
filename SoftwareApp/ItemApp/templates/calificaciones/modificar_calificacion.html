@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Modificar Calificación Tributaria{% endblock %}
+
+{% block styles %}
+<style>
+    .form-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .info-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+    }
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+    .factors-section {
+        margin-top: 30px;
+    }
+    .factors-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    .factor-group {
+        margin-bottom: 15px;
+    }
+    .factor-label {
+        font-size: 0.9em;
+        font-weight: 500;
+        margin-bottom: 5px;
+        color: #495057;
+    }
+    .factor-description {
+        font-size: 0.75em;
+        color: #6c757d;
+        margin-top: 2px;
+    }
+    .btn-save {
+        background: #0d6efd;
+        color: white;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    .btn-save:hover {
+        background: #0b5ed7;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="form-container">
+        <h2 class="mb-4">Modificar Calificación Tributaria</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Información Principal -->
+            <div class="info-section">
+                <h5 class="mb-3">Información Principal</h5>
+                <div class="info-row">
+                    <div class="form-group">
+                        <label for="{{ form.mercado.id_for_label }}" class="form-label">{{ form.mercado.label }}</label>
+                        {{ form.mercado }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.instrumento.id_for_label }}" class="form-label">{{ form.instrumento.label }}</label>
+                        {{ form.instrumento }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.valor_historico.id_for_label }}" class="form-label">{{ form.valor_historico.label }}</label>
+                        {{ form.valor_historico }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.fecha_pago.id_for_label }}" class="form-label">{{ form.fecha_pago.label }}</label>
+                        {{ form.fecha_pago }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.evento_capital.id_for_label }}" class="form-label">{{ form.evento_capital.label }}</label>
+                        {{ form.evento_capital }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.descripcion.id_for_label }}" class="form-label">{{ form.descripcion.label }}</label>
+                        {{ form.descripcion }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.secuencia_evento.id_for_label }}" class="form-label">{{ form.secuencia_evento.label }}</label>
+                        {{ form.secuencia_evento }}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.año.id_for_label }}" class="form-label">{{ form.año.label }}</label>
+                        {{ form.año }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Factores Tributarios -->
+            <div class="factors-section">
+                <h5 class="mb-3">Factores Tributarios</h5>
+                <div class="factors-grid">
+                    <!-- Columna 1 -->
+                    <div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_08.id_for_label }}" class="factor-label">Factor-08</label>
+                            {{ form.factor_08 }}
+                            <div class="factor-description">Con crédito por IDPC generados a contar del 01.01.2017</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_11.id_for_label }}" class="factor-label">Factor-11</label>
+                            {{ form.factor_11 }}
+                            <div class="factor-description">Sin derecho a credito</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_14.id_for_label }}" class="factor-label">Factor-14</label>
+                            {{ form.factor_14 }}
+                            <div class="factor-description">Impto. 1ra Categ. Exento Gl Comp. Sin Devolución</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_17.id_for_label }}" class="factor-label">Factor-17</label>
+                            {{ form.factor_17 }}
+                            <div class="factor-description">No Constitutiva de Renta Devolución de Capital Art.17</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_20.id_for_label }}" class="factor-label">Factor-20</label>
+                            {{ form.factor_20 }}
+                            <div class="factor-description">Sin Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_23.id_for_label }}" class="factor-label">Factor-23</label>
+                            {{ form.factor_23 }}
+                            <div class="factor-description">Con Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_26.id_for_label }}" class="factor-label">Factor-26</label>
+                            {{ form.factor_26 }}
+                            <div class="factor-description">Sin Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_29.id_for_label }}" class="factor-label">Factor-29</label>
+                            {{ form.factor_29 }}
+                            <div class="factor-description">Sin Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_32.id_for_label }}" class="factor-label">Factor-32</label>
+                            {{ form.factor_32 }}
+                            <div class="factor-description">Con Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_35.id_for_label }}" class="factor-label">Factor-35</label>
+                            {{ form.factor_35 }}
+                            <div class="factor-description">Tasa Efectiva Del Cred. Del FUT (TEF)</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_198.id_for_label }}" class="factor-label">Factor-198</label>
+                            {{ form.factor_198 }}
+                            <div class="factor-description">Ingreso no Constitutivos de Renta</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Columna 2 -->
+                    <div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_09.id_for_label }}" class="factor-label">Factor-09</label>
+                            {{ form.factor_09 }}
+                            <div class="factor-description">Con crédito por IDPC acumulados hasta el 31.12.2016</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_12.id_for_label }}" class="factor-label">Factor-12</label>
+                            {{ form.factor_12 }}
+                            <div class="factor-description">Impto. 1ra Categ. Exento Gl Comp. Con Devolución</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_15.id_for_label }}" class="factor-label">Factor-15</label>
+                            {{ form.factor_15 }}
+                            <div class="factor-description">Impto. Créditos pro Impuestos Externos</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_18.id_for_label }}" class="factor-label">Factor-18</label>
+                            {{ form.factor_18 }}
+                            <div class="factor-description">Rentas Exentas de Impto. GC Y/O Impto Adicional</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_21.id_for_label }}" class="factor-label">Factor-21</label>
+                            {{ form.factor_21 }}
+                            <div class="factor-description">Con Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_24.id_for_label }}" class="factor-label">Factor-24</label>
+                            {{ form.factor_24 }}
+                            <div class="factor-description">Sin Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_27.id_for_label }}" class="factor-label">Factor-27</label>
+                            {{ form.factor_27 }}
+                            <div class="factor-description">Con Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_30.id_for_label }}" class="factor-label">Factor-30</label>
+                            {{ form.factor_30 }}
+                            <div class="factor-description">Con Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_33.id_for_label }}" class="factor-label">Factor-33</label>
+                            {{ form.factor_33 }}
+                            <div class="factor-description">Credito por IPE</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_36.id_for_label }}" class="factor-label">Factor-36</label>
+                            {{ form.factor_36 }}
+                            <div class="factor-description">TASA EFECTIVA DEL CRED. DEL FUNT (TEX)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Columna 3 -->
+                    <div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_10.id_for_label }}" class="factor-label">Factor-10</label>
+                            {{ form.factor_10 }}
+                            <div class="factor-description">Con derecho a crédito por pago IDPC Voluntario</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_13.id_for_label }}" class="factor-label">Factor-13</label>
+                            {{ form.factor_13 }}
+                            <div class="factor-description">Impto. 1ra Categ. Afecto Gl Comp. Sin Devolución</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_16.id_for_label }}" class="factor-label">Factor-16</label>
+                            {{ form.factor_16 }}
+                            <div class="factor-description">No Constitutiva de Renta Acogido a Impto.</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_19.id_for_label }}" class="factor-label">Factor-19</label>
+                            {{ form.factor_19 }}
+                            <div class="factor-description">Ingreso no Constitutivos de Renta</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_22.id_for_label }}" class="factor-label">Factor-22</label>
+                            {{ form.factor_22 }}
+                            <div class="factor-description">Sin Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_25.id_for_label }}" class="factor-label">Factor-25</label>
+                            {{ form.factor_25 }}
+                            <div class="factor-description">Con Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_28.id_for_label }}" class="factor-label">Factor-28</label>
+                            {{ form.factor_28 }}
+                            <div class="factor-description">Credito por IPE</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_31.id_for_label }}" class="factor-label">Factor-31</label>
+                            {{ form.factor_31 }}
+                            <div class="factor-description">Sin Derecho a Devolucion</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_34.id_for_label }}" class="factor-label">Factor-34</label>
+                            {{ form.factor_34 }}
+                            <div class="factor-description">Cred. Por Impto. Tasa Adicional, Ex Art. 21 UR</div>
+                        </div>
+                        <div class="factor-group">
+                            <label for="{{ form.factor_37.id_for_label }}" class="factor-label">Factor-37</label>
+                            {{ form.factor_37 }}
+                            <div class="factor-description">DEVOLUCION DE CAPITAL ART. 17 NUM 7 UR</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-save">GUARDAR</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

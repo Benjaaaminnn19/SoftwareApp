@@ -1,0 +1,358 @@
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_title %}
+    Mi Dashboard
+{% endblock %}
+
+{% block dashboard_page_title %}
+    <i class="fas fa-chart-line"></i> Mi Dashboard
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid">
+    <!-- Mensaje de bienvenida -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info border-0 shadow-sm">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle fa-2x me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-1">¡Bienvenido, {{ user.first_name|default:user.username }}!</h5>
+                        <p class="mb-0">Aquí puedes ver un resumen de tus datos tributarios y gestionar tus clasificaciones.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-folder fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Clasificaciones</h6>
+                            <h2 class="mb-0">{{ total_clasificaciones }}</h2>
+                            <small class="text-muted">
+                                <i class="fas fa-tags"></i> Total de categorías
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'crear_clasificacion' %}" class="btn btn-sm btn-primary w-100">
+                        <i class="fas fa-plus me-1"></i> Crear Nueva
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-file-invoice-dollar fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Datos Tributarios</h6>
+                            <h2 class="mb-0">{{ total_datos }}</h2>
+                            <small class="text-muted">
+                                <i class="fas fa-database"></i> Total de registros
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-sm btn-success w-100">
+                        <i class="fas fa-list me-1"></i> Ver Todos
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                                <i class="fas fa-dollar-sign fa-2x"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="text-muted mb-1">Monto Total</h6>
+                            <h2 class="mb-0">${{ monto_total|floatformat:2 }}</h2>
+                            <small class="text-muted">
+                                <i class="fas fa-chart-line"></i> Suma total
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent border-0">
+                    <a href="{% url 'carga_datos' %}" class="btn btn-sm btn-warning w-100 text-white">
+                        <i class="fas fa-upload me-1"></i> Cargar Datos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-bolt text-primary me-2"></i>
+                        Acciones Rápidas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'crear_clasificacion' %}" class="btn btn-outline-primary w-100 py-3">
+                                <i class="fas fa-folder-plus fa-2x d-block mb-2"></i>
+                                <span>Nueva Clasificación</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'carga_datos' %}" class="btn btn-outline-success w-100 py-3">
+                                <i class="fas fa-upload fa-2x d-block mb-2"></i>
+                                <span>Cargar Datos</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-outline-info w-100 py-3">
+                                <i class="fas fa-list fa-2x d-block mb-2"></i>
+                                <span>Ver Mis Datos</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <a href="{% url 'descargar_plantilla' %}" class="btn btn-outline-secondary w-100 py-3">
+                                <i class="fas fa-download fa-2x d-block mb-2"></i>
+                                <span>Descargar Plantilla</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dos columnas: Datos Recientes y Clasificaciones -->
+    <div class="row">
+        <!-- Datos Recientes -->
+        <div class="col-lg-7 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        Datos Recientes
+                    </h5>
+                    <a href="{% url 'listar_datos_tributarios' %}" class="btn btn-sm btn-outline-primary">
+                        Ver Todos <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if datos_recientes %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Clasificación</th>
+                                        <th class="text-end">Monto</th>
+                                        <th>Fecha</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dato in datos_recientes %}
+                                    <tr>
+                                        <td>
+                                            <strong>{{ dato.nombre_dato|truncatewords:4 }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">
+                                                {{ dato.clasificacion.nombre }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end">
+                                            {% if dato.monto %}
+                                                <strong class="text-success">${{ dato.monto|floatformat:2 }}</strong>
+                                            {% else %}
+                                                <span class="text-muted">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">
+                                                {{ dato.creado_en|date:"d/m/Y" }}
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No hay datos tributarios registrados aún.</p>
+                            <a href="{% url 'carga_datos' %}" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Cargar Datos
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Estadísticas por Clasificación -->
+        <div class="col-lg-5 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center pt-4">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chart-pie text-primary me-2"></i>
+                        Mis Clasificaciones
+                    </h5>
+                    <a href="{% url 'crear_clasificacion' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if stats_clasificacion %}
+                        <div class="list-group list-group-flush">
+                            {% for stat in stats_clasificacion %}
+                            <div class="list-group-item border-0 px-0">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <h6 class="mb-1">{{ stat.nombre }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-database"></i> {{ stat.total_datos }} registro{{ stat.total_datos|pluralize }}
+                                        </small>
+                                    </div>
+                                    <div class="text-end">
+                                        <strong class="text-success d-block">
+                                            ${{ stat.monto_total|floatformat:2|default:"0.00" }}
+                                        </strong>
+                                    </div>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         
+                                         aria-valuenow="{% if total_datos > 0 %}{% widthratio stat.total_datos total_datos 100 %}{% else %}0{% endif %}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <p class="text-muted mb-3">No hay clasificaciones creadas aún.</p>
+                            <a href="{% url 'crear_clasificacion' %}" class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>Crear Clasificación
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guía de inicio (si no hay datos) -->
+    {% if total_datos == 0 %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 bg-light">
+                <div class="card-body p-4">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-rocket text-primary me-2"></i>
+                        ¿Cómo empezar?
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; min-width: 40px;">
+                                    <strong>1</strong>
+                                </div>
+                                <div>
+                                    <h6>Crea una Clasificación</h6>
+                                    <p class="text-muted small mb-0">
+                                        Organiza tus datos en categorías como "Renta Fija", "Renta Variable", etc.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; min-width: 40px;">
+                                    <strong>2</strong>
+                                </div>
+                                <div>
+                                    <h6>Carga tus Datos</h6>
+                                    <p class="text-muted small mb-0">
+                                        Sube un archivo Excel o CSV con tus datos tributarios.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-start">
+                                <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px; min-width: 40px;">
+                                    <strong>3</strong>
+                                </div>
+                                <div>
+                                    <h6>Gestiona y Analiza</h6>
+                                    <p class="text-muted small mb-0">
+                                        Visualiza, edita y analiza tus datos en tiempo real.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+/* Estilos adicionales para mejorar la presentación */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover,
+.btn-outline-info:hover,
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    transition: background-color 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}
